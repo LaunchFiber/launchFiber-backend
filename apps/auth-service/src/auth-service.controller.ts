@@ -15,4 +15,32 @@ export class AuthServiceController {
     ) {
         return this.authService.register(data)
     }
+
+    @MessagePattern({ cmd: "auth.login" })
+    login(@Payload() data: {
+        email: string;
+        password: string;
+    },) {
+        return this.authService.login(data)
+    }
+
+    @MessagePattern({ cmd: 'auth.verify' })
+    verify(
+        @Payload()
+        data: {
+            token: string;
+        },
+    ) {
+        return this.authService.verifyToken(data.token);
+    }
+
+    @MessagePattern({ cmd: 'auth.profile' })
+    profile(
+        @Payload()
+        data: {
+            userId: string;
+        },
+    ) {
+        return this.authService.getProfile(data.userId);
+    }
 }

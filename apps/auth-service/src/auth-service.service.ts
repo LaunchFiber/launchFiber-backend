@@ -1,4 +1,5 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { RpcException } from '@nestjs/microservices';
 import { PrismaService } from './prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
@@ -22,7 +23,7 @@ export class AuthService {
         })
 
         if (existingUser) {
-            throw new BadRequestException("User already exists!")
+            throw new RpcException('User already exists!');
         }
 
         const passwordHash = await bcrypt.hash(data.password, 10);
@@ -36,6 +37,72 @@ export class AuthService {
         });
 
         return this.buildAuthResponse(user)
+    }
+
+    async login(data: {
+        email: string;
+        password: string;
+    }) {
+        const user = await this.prisma.user.findUnique({
+            where: {
+                email: data.email,
+            },
+        })
+
+        if (!user) {
+            throw new RpcException("Invalid credentials");
+        }
+
+        const isPasswordValid = await bcrypt.compare(
+            data.password,
+            user.passwordHash
+        )
+
+        if (!isPasswordValid) {
+            throw new RpcException('Invalid credentials');
+        }
+
+        return this.buildAuthResponse(user);
+    }
+
+    async verifyToken(token: string) {
+        try {
+            const payload = await this.jwtService.verifyAsync(token, {
+                secret: process.env.JWT_SECRET || 'fiberdev_secret',
+            });
+
+
+            const user = await this.prisma.user.findUnique({
+                where: {
+                    id: payload.sub,
+                },
+            });
+
+            if (!user) {
+                throw new RpcException('User not found');
+            }
+
+            return {
+                valid: true,
+                user: this.sanitizeUser(user),
+            };
+        } catch (e) {
+            throw new RpcException('Invalid token');
+        }
+    }
+
+    async getProfile(userId: string) {
+        const user = await this.prisma.user.findUnique({
+            where: {
+                id: userId,
+            },
+        });
+
+        if (!user) {
+            throw new RpcException('User not found');
+        }
+
+        return this.sanitizeUser(user);
     }
 
 
@@ -55,7 +122,6 @@ export class AuthService {
 
     private sanitizeUser(user: any) {
         return {
-            id: user.id,
             name: user.name,
             email: user.email,
             role: user.role,

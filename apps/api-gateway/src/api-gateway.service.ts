@@ -17,6 +17,21 @@ export class ApiGatewayService {
         return this.sendToAuthService('auth.register', data)
     }
 
+    async login(data: {
+        email: string;
+        password: string;
+    }) {
+        return this.sendToAuthService('auth.login', data)
+    }
+
+    async verifyToken(token: string) {
+        return this.sendToAuthService('auth.verify', { token });
+    }
+
+    async getProfile(userId: string) {
+        return this.sendToAuthService('auth.profile', { userId });
+    }
+
     private async sendToAuthService(cmd: string, payload: any) {
         return firstValueFrom(
             this.authClient.send({ cmd }, payload).pipe(
