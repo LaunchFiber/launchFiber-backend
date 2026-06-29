@@ -3,15 +3,26 @@ import { JwtModule } from '@nestjs/jwt';
 import { AuthServiceController } from './auth-service.controller';
 import { AuthService } from './auth-service.service';
 import { PrismaService } from './prisma.service'; // Import local PrismaService
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
     imports: [
-        JwtModule.register({
-            secret: process.env.JWT_SECRET || 'secret',
-            signOptions: { expiresIn: '1h' },
+        ConfigModule.forRoot({
+            isGlobal: true,
+            envFilePath: '.env',
+        }),
+        JwtModule.registerAsync({
+            imports: [ConfigModule],
+            inject: [ConfigService],
+            useFactory: (config: ConfigService) => ({
+                secret: config.get<string>('JWT_SECRET') || 'fiberdev_secret',
+                signOptions: {
+                    expiresIn: config.get<string | any>('JWT_EXPIRES_IN') || '1d',
+                },
+            }),
         }),
     ],
     controllers: [AuthServiceController],
-    providers: [AuthService, PrismaService], // Add PrismaService to providers
+    providers: [AuthService, PrismaService],
 })
 export class AuthServiceModule { }
