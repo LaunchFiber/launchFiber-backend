@@ -1,512 +1,98 @@
-# 6. Container Runtime
+<p align="center">
+  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
+</p>
 
-## Overview
+[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
+[circleci-url]: https://circleci.com/gh/nestjs/nest
 
-The Container Runtime is the execution layer of FiberDev Studio. It is 
-responsible for provisioning, managing, and monitoring the isolated 
-environments in which developers build, test, and debug Fiber 
-applications.
+  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
+    <p align="center">
+<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
+<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
+<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
+<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
+<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
+<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
+<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
+  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
+    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
+  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
+</p>
+  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
+  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
-Unlike traditional cloud IDEs that execute everything inside a single 
-container, FiberDev Studio adopts a **multi-container workspace 
-architecture**, where each workspace is composed of several specialized 
-containers. Each container performs a dedicated responsibility while 
-communicating securely over an isolated internal network.
+## Description
 
-This modular architecture provides:
+[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
-- Better security through process isolation
-- Improved scalability
-- Independent service lifecycle management
-- Easier debugging and monitoring
-- Reusable runtime components
-- Efficient resource allocation
-- Support for future collaborative features
-
----
-
-# Architecture Overview
-
-Each developer workspace consists of the following containers:
-
-```
-Workspace
-│
-├── IDE Container
-├── Fiber Runtime Container
-├── Preview Container
-└── Test Runner Container
-```
-
-All containers share:
-
-- Persistent Workspace Volume
-- Internal Docker Network
-- Environment Variables
-- Secret Store
-- Logging Service
-
-Each workspace is completely isolated from every other workspace.
-
----
-
-# Workspace Runtime Layout
-
-```text
-                    Workspace
-                        │
-        
-┌───────────────┼────────────────┐
-        │               │                │
-        ▼               ▼                ▼
- IDE Container   Runtime Container   Preview Container
-        │               │                │
-        
-└───────────────┼────────────────┘
-                        │
-                Test Runner Container
-                        │
-                        ▼
-              Shared Persistent Volume
-```
-
----
-
-# Container Responsibilities
-
-## 1. IDE Container
-
-The IDE Container provides the browser-based development environment that 
-developers interact with.
-
-This container is responsible for:
-
-- Monaco Editor / VS Code Server
-- File explorer
-- Extension host
-- Language Server Protocol (LSP)
-- Git integration
-- Workspace settings
-- Terminal frontend
-
-### Installed Components
-
-- VS Code Server
-- Monaco Editor
-- Git
-- Node.js
-- Language Servers
-- File Watcher
-
-### Responsibilities
-
-- Open project files
-- Edit source code
-- Display diagnostics
-- Connect to runtime services
-- Stream terminal sessions
-
----
-
-## 2. Fiber Runtime Container
-
-The Runtime Container contains the complete Fiber development stack.
-
-This is where application code is compiled and executed.
-
-### Installed Components
-
-- Fiber CLI
-- Rust Toolchain
-- Cargo
-- CKB Node
-- CKB Indexer
-- Molecule Compiler
-- Smart Contract Toolchain
-- Build Utilities
-
-### Responsibilities
-
-- Compile projects
-- Execute build commands
-- Deploy smart contracts
-- Manage local blockchain state
-- Execute CLI commands
-- Run backend services
-
-The Runtime Container exposes APIs internally to the IDE Container.
-
-Example commands:
+## Project setup
 
 ```bash
-cargo build
-
-cargo test
-
-fiber init
-
-fiber run
-
-ckb-cli
+$ pnpm install
 ```
 
----
+## Compile and run the project
 
-## 3. Preview Container
+```bash
+# development
+$ pnpm run start
 
-The Preview Container serves applications running inside the workspace.
+# watch mode
+$ pnpm run start:dev
 
-Whenever a developer starts a local server, the Preview Container proxies 
-traffic securely back to the browser.
-
-Examples:
-
-- React applications
-- Next.js
-- Vue
-- APIs
-- Documentation servers
-
-Responsibilities:
-
-- HTTP Proxy
-- HTTPS Proxy
-- SSL termination
-- Port forwarding
-- Preview URL generation
-
-Example
-
-```
-localhost:3000
+# production mode
+$ pnpm run start:prod
 ```
 
-becomes
+## Run tests
 
-```
-workspace-4f72.preview.fiberdev.io
-```
+```bash
+# unit tests
+$ pnpm run test
 
----
+# e2e tests
+$ pnpm run test:e2e
 
-## 4. Test Runner Container
-
-Testing workloads are isolated from the development environment.
-
-Responsibilities include:
-
-- Unit Tests
-- Integration Tests
-- Smart Contract Tests
-- Benchmark Tests
-- Coverage Reports
-
-Installed tools include:
-
-- Cargo Test
-- Jest
-- Playwright
-- Coverage utilities
-
----
-
-# Shared Components
-
-## Persistent Workspace Volume
-
-All containers mount the same workspace volume.
-
-```
-/workspace
+# test coverage
+$ pnpm run test:cov
 ```
 
-This directory contains:
+## Deployment
 
-```
-project/
+When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
 
-Cargo.toml
+If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
 
-README.md
-
-contracts/
-
-src/
-
-tests/
-
-node_modules/
-
-target/
+```bash
+$ pnpm install -g @nestjs/mau
+$ mau deploy
 ```
 
-Advantages
+With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
 
-- Files are immediately visible across containers.
-- No synchronization required.
-- Fast rebuilds.
-- Persistent across restarts.
+## Resources
 
----
+Check out a few resources that may come in handy when working with NestJS:
 
-## Internal Workspace Network
+- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
+- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
+- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
+- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
+- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
+- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
+- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
+- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
 
-Every workspace receives its own isolated Docker network.
+## Support
 
-Example
+Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
 
-```
-workspace_72_net
-```
+## Stay in touch
 
-Only containers belonging to the same workspace may communicate.
+- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
+- Website - [https://nestjs.com](https://nestjs.com/)
+- Twitter - [@nestframework](https://twitter.com/nestframework)
 
-Example
+## License
 
-```
-IDE
-↓
-
-Runtime
-
-↓
-
-Preview
-
-↓
-
-Test Runner
-```
-
-No communication exists between different workspaces.
-
----
-
-## Environment Variables
-
-Sensitive configuration is injected during startup.
-
-Examples
-
-```
-WORKSPACE_ID
-
-USER_ID
-
-CKB_RPC_URL
-
-FIBER_NETWORK
-
-DATABASE_URL
-
-API_TOKEN
-```
-
-Secrets are never baked into Docker images.
-
----
-
-## Logging
-
-Each container streams logs into a centralized logging pipeline.
-
-Sources include:
-
-- stdout
-- stderr
-- build logs
-- runtime logs
-- terminal logs
-
-These logs are stored for:
-
-- debugging
-- audit
-- monitoring
-
----
-
-# Container Communication
-
-```text
-IDE Container
-      │
-      ▼
-Runtime Container
-      │
-      ├────────► Build
-      ├────────► Run
-      ├────────► Deploy
-      │
-      ▼
-Preview Container
-      │
-      ▼
-Browser Preview
-
-Runtime Container
-      │
-      ▼
-Test Runner
-```
-
-Communication occurs only over the internal workspace network.
-
----
-
-# Resource Isolation
-
-Every workspace is allocated dedicated resources.
-
-Example
-
-| Resource | Allocation |
-|----------|------------|
-| CPU | 2 vCPU |
-| Memory | 4 GB |
-| Storage | 20 GB |
-| Network | Isolated |
-| Volume | Dedicated |
-
-These limits prevent one workspace from affecting another.
-
----
-
-# Workspace Provisioning Workflow
-
-When a user creates a workspace, the following sequence occurs.
-
-```mermaid
-sequenceDiagram
-    participant User
-    participant Frontend
-    participant API
-    participant Queue
-    participant Orchestrator
-    participant Docker
-    participant Workspace
-
-    User->>Frontend: Create Workspace
-
-    Frontend->>API: POST /workspace
-
-    API->>Queue: Queue Provision Job
-
-    Queue->>Orchestrator: Process Job
-
-    Orchestrator->>Docker: Create Network
-
-    Orchestrator->>Docker: Create Volume
-
-    Orchestrator->>Docker: Start IDE Container
-
-    Orchestrator->>Docker: Start Runtime Container
-
-    Orchestrator->>Docker: Start Preview Container
-
-    Orchestrator->>Docker: Start Test Runner
-
-    Docker-->>Workspace: Workspace Ready
-
-    Workspace-->>Frontend: Running
-
-    Frontend-->>User: Open IDE
-```
-
----
-
-# Container Runtime Workflow
-
-```mermaid
-flowchart TD
-
-A[User Creates Workspace]
-
-A --> B[API Gateway]
-
-B --> C[Workspace Service]
-
-C --> D[Job Queue]
-
-D --> E[Workspace Orchestrator]
-
-E --> F[Create Docker Network]
-
-F --> G[Create Persistent Volume]
-
-G --> H[Start IDE Container]
-
-H --> I[Start Runtime Container]
-
-I --> J[Start Preview Container]
-
-J --> K[Start Test Runner]
-
-K --> L[Run Health Checks]
-
-L --> M[Register Services]
-
-M --> N[Workspace Status = RUNNING]
-
-N --> O[User Connects to IDE]
-
-O --> P[Start Building Applications]
-```
-
----
-
-# Health Monitoring
-
-The orchestrator continuously monitors every running container.
-
-Checks include:
-
-- CPU usage
-- Memory usage
-- Disk usage
-- Container health
-- Running processes
-- Open ports
-- Build status
-
-If a container becomes unhealthy:
-
-1. Mark unhealthy
-2. Collect logs
-3. Restart container
-4. Restore workspace state
-5. Notify the user if recovery fails
-
----
-
-# Future Improvements
-
-The runtime architecture is designed to support future capabilities 
-without significant redesign.
-
-Planned enhancements include:
-
-- Kubernetes-based scheduling
-- GPU-enabled workspaces
-- Collaborative development sessions
-- Workspace snapshots and restoration
-- Auto-scaling runtime nodes
-- Distributed build workers
-- Remote debugging support
-- Multi-region workspace deployment
-- Custom runtime images
-- Persistent development environments
-
----
-
-# Summary
-
-The Container Runtime is the execution backbone of FiberDev Studio. By 
-decomposing each workspace into multiple specialized containers—IDE, 
-Runtime, Preview, and Test Runner—the platform achieves strong isolation, 
-modularity, scalability, and maintainability. Shared persistent storage, 
-isolated networking, centralized logging, and orchestration services 
-ensure that every developer receives a secure, reproducible, and 
-production-grade cloud development environment while enabling future 
-expansion to collaborative and enterprise-scale workloads.
-# launchFiber-backend
+Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
