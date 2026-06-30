@@ -15,6 +15,8 @@ export class WorkspaceServiceController {
             templateId?: string;
         },
     ) {
+
+        console.log('Received workspace create request:', data);
         return this.workspaceService.create(data)
     }
 

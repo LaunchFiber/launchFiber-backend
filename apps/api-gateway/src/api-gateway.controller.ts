@@ -53,7 +53,11 @@ export class ApiGatewayController {
         @Headers('authorization') authorization: string,
         @Body() body: { name: string; templateId?: string },
     ) {
+
+        console.log('Created workspace request:', body);
         const user = await this.getUserFromAuthorizationHeader(authorization);
+
+        console.log('User:', user);
 
         return this.gatewayService.createWorkspace({
             userId: user.id,

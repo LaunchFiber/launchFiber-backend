@@ -122,6 +122,7 @@ export class AuthService {
 
     private sanitizeUser(user: any) {
         return {
+            id: user.id,
             name: user.name,
             email: user.email,
             role: user.role,
