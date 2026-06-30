@@ -37,6 +37,15 @@
       "compilerOptions": {
         "tsConfigPath": "libs/prisma/tsconfig.lib.json"
       }
+    },
+    "workspace-service": {
+      "type": "application",
+      "root": "apps/workspace-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/workspace-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/workspace-service/tsconfig.app.json"
+      }
     }
   }
 }

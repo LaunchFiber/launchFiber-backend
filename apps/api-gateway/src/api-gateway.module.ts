@@ -1,20 +1,43 @@
+// apps/api-gateway/src/api-gateway.module.ts
 import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ApiGatewayController } from './api-gateway.controller';
 import { ApiGatewayService } from './api-gateway.service';
-import { ClientsModule, Transport } from '@nestjs/microservices';
 
 @Module({
     imports: [
-        ClientsModule.register([
+        ConfigModule.forRoot({
+            isGlobal: true,
+            envFilePath: '.env',
+        }),
+
+        ClientsModule.registerAsync([
             {
                 name: 'AUTH_SERVICE',
-                transport: Transport.TCP,
-                options: {
-                    host: process.env.AUTH_SERVICE_HOST || 'localhost',
-                    port: Number(process.env.AUTH_SERVICE_PORT) || 8001,
-                }
+                imports: [ConfigModule],
+                inject: [ConfigService],
+                useFactory: (config: ConfigService) => ({
+                    transport: Transport.TCP,
+                    options: {
+                        host: config.get<string>('AUTH_SERVICE_HOST') || '127.0.0.1',
+                        port: Number(config.get<string>('AUTH_SERVICE_PORT')) || 8001,
+                    },
+                }),
             },
-        ])
+            {
+                name: 'WORKSPACE_SERVICE',
+                imports: [ConfigModule],
+                inject: [ConfigService],
+                useFactory: (config: ConfigService) => ({
+                    transport: Transport.TCP,
+                    options: {
+                        host: config.get<string>('WORKSPACE_SERVICE_HOST') || '127.0.0.1',
+                        port: Number(config.get<string>('WORKSPACE_SERVICE_PORT')) || 8002,
+                    }
+                })
+            }
+        ]),
     ],
     controllers: [ApiGatewayController],
     providers: [ApiGatewayService],

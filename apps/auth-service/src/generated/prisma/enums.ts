@@ -9,19 +9,6 @@
 * 🟢 You can import this file directly.
 */
 
-export const WorkspaceStatus = {
-  PENDING: 'PENDING',
-  PROVISIONING: 'PROVISIONING',
-  RUNNING: 'RUNNING',
-  IDLE: 'IDLE',
-  STOPPED: 'STOPPED',
-  FAILED: 'FAILED',
-  DELETED: 'DELETED'
-} as const
-
-export type WorkspaceStatus = (typeof WorkspaceStatus)[keyof typeof WorkspaceStatus]
-
-
 export const UserRole = {
   USER: 'USER',
   ADMIN: 'ADMIN'
