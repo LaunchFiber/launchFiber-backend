@@ -9,7 +9,10 @@ export class ApiGatewayService {
         private readonly authClient: ClientProxy,
 
         @Inject('WORKSPACE_SERVICE')
-        private readonly workspaceClient: ClientProxy
+        private readonly workspaceClient: ClientProxy,
+
+        @Inject('FILE_SERVICE')
+        private readonly fileClient: ClientProxy,
     ) { }
 
     async register(data: {
@@ -86,6 +89,119 @@ export class ApiGatewayService {
                 workspaceId,
             },
             30000,
+        );
+    }
+
+    listFiles(userId: string, workspaceId: string) {
+        return this.send(
+            this.fileClient,
+            'file.list',
+            {
+                userId,
+                workspaceId,
+            },
+        );
+    }
+
+    readFile(
+        userId: string,
+        workspaceId: string,
+        path: string,
+    ) {
+        return this.send(
+            this.fileClient,
+            'file.read',
+            {
+                userId,
+                workspaceId,
+                path,
+            },
+        );
+    }
+
+    createFile(
+        userId: string,
+        workspaceId: string,
+        path: string,
+        content: string,
+    ) {
+        return this.send(
+            this.fileClient,
+            'file.create',
+            {
+                userId,
+                workspaceId,
+                path,
+                content,
+            },
+        );
+    }
+
+    updateFile(
+        userId: string,
+        workspaceId: string,
+        path: string,
+        content: string,
+    ) {
+        return this.send(
+            this.fileClient,
+            'file.update',
+            {
+                userId,
+                workspaceId,
+                path,
+                content,
+            },
+        );
+    }
+
+    deleteFile(
+        userId: string,
+        workspaceId: string,
+        path: string,
+    ) {
+        return this.send(
+            this.fileClient,
+            'file.delete',
+            {
+                userId,
+                workspaceId,
+                path,
+            },
+        );
+    }
+
+    createDirectory(
+        userId: string,
+        workspaceId: string,
+        path: string,
+    ) {
+        return this.send(
+            this.fileClient,
+            'file.mkdir',
+            {
+                userId,
+                workspaceId,
+                path,
+            },
+        );
+    }
+
+    renameFile(
+        userId: string,
+        workspaceId: string,
+        oldPath: string,
+        newPath: string,
+    ) {
+        return this.send(
+            this.fileClient,
+            'file.rename',
+            {
+                userId,
+                workspaceId,
+                oldPath,
+                newPath,
+            },
         );
     }
 

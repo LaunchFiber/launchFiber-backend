@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Headers, Param, Post, UnauthorizedException } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Headers, Param, Post, Query, UnauthorizedException, Put } from '@nestjs/common';
 import { ApiGatewayService } from './api-gateway.service';
 
 @Controller()
@@ -123,6 +123,177 @@ export class ApiGatewayController {
         return this.gatewayService.getWorkspaceStatus(
             user.id,
             workspaceId,
+        );
+    }
+
+    @Get('workspace/:id/files')
+    async listFiles(
+        @Headers('authorization')
+        authorization: string,
+
+        @Param('id')
+        workspaceId: string,
+    ) {
+        const user =
+            await this.getUserFromAuthorizationHeader(
+                authorization,
+            );
+
+        return this.gatewayService.listFiles(
+            user.id,
+            workspaceId,
+        );
+    }
+
+    @Get('workspace/:id/files/content')
+    async readFile(
+        @Headers('authorization')
+        authorization: string,
+
+        @Param('id')
+        workspaceId: string,
+
+        @Query('path')
+        path: string,
+    ) {
+        const user =
+            await this.getUserFromAuthorizationHeader(
+                authorization,
+            );
+
+        return this.gatewayService.readFile(
+            user.id,
+            workspaceId,
+            path,
+        );
+    }
+
+    @Post('workspace/:id/files')
+    async createFile(
+        @Headers('authorization')
+        authorization: string,
+
+        @Param('id')
+        workspaceId: string,
+
+        @Body()
+        body: {
+            path: string;
+            content?: string;
+        },
+    ) {
+        const user =
+            await this.getUserFromAuthorizationHeader(
+                authorization,
+            );
+
+        return this.gatewayService.createFile(
+            user.id,
+            workspaceId,
+            body.path,
+            body.content ?? '',
+        );
+    }
+
+    @Put('workspace/:id/files')
+    async updateFile(
+        @Headers('authorization')
+        authorization: string,
+
+        @Param('id')
+        workspaceId: string,
+
+        @Body()
+        body: {
+            path: string;
+            content: string;
+        },
+    ) {
+        const user =
+            await this.getUserFromAuthorizationHeader(
+                authorization,
+            );
+
+        return this.gatewayService.updateFile(
+            user.id,
+            workspaceId,
+            body.path,
+            body.content,
+        );
+    }
+
+    @Delete('workspace/:id/files')
+    async deleteFile(
+        @Headers('authorization')
+        authorization: string,
+
+        @Param('id')
+        workspaceId: string,
+
+        @Query('path')
+        path: string,
+    ) {
+        const user =
+            await this.getUserFromAuthorizationHeader(
+                authorization,
+            );
+
+        return this.gatewayService.deleteFile(
+            user.id,
+            workspaceId,
+            path,
+        );
+    }
+
+    @Post('workspace/:id/directories')
+    async createDirectory(
+        @Headers('authorization')
+        authorization: string,
+
+        @Param('id')
+        workspaceId: string,
+
+        @Body()
+        body: {
+            path: string;
+        },
+    ) {
+        const user =
+            await this.getUserFromAuthorizationHeader(
+                authorization,
+            );
+
+        return this.gatewayService.createDirectory(
+            user.id,
+            workspaceId,
+            body.path,
+        );
+    }
+
+    @Put('workspace/:id/files/rename')
+    async renameFile(
+        @Headers('authorization')
+        authorization: string,
+
+        @Param('id')
+        workspaceId: string,
+
+        @Body()
+        body: {
+            oldPath: string;
+            newPath: string;
+        },
+    ) {
+        const user =
+            await this.getUserFromAuthorizationHeader(
+                authorization,
+            );
+
+        return this.gatewayService.renameFile(
+            user.id,
+            workspaceId,
+            body.oldPath,
+            body.newPath,
         );
     }
 

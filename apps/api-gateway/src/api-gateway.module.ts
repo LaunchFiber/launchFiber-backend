@@ -36,6 +36,29 @@ import { ApiGatewayService } from './api-gateway.service';
                         port: Number(config.get<string>('WORKSPACE_SERVICE_PORT')) || 8002,
                     }
                 })
+            },
+            {
+                name: 'FILE_SERVICE',
+                imports: [ConfigModule],
+                inject: [ConfigService],
+
+                useFactory: (config: ConfigService) => ({
+                    transport: Transport.TCP,
+
+                    options: {
+                        host:
+                            config.get<string>(
+                                'FILE_SERVICE_HOST',
+                            ) || '127.0.0.1',
+
+                        port:
+                            Number(
+                                config.get<string>(
+                                    'FILE_SERVICE_PORT',
+                                ),
+                            ) || 8005,
+                    },
+                }),
             }
         ]),
     ],
