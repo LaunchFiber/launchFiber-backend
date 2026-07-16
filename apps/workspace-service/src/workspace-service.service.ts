@@ -1,10 +1,23 @@
-import { Injectable } from '@nestjs/common';
-import { RpcException } from '@nestjs/microservices';
+// apps/workspace-service/src/workspace-service.service.ts
+import {
+    ForbiddenException,
+    Inject,
+    Injectable,
+    NotFoundException,
+} from '@nestjs/common';
+import { ClientProxy } from '@nestjs/microservices';
+import { firstValueFrom, timeout } from 'rxjs';
+
 import { PrismaService } from 'libs/prisma/src/prisma.service';
 
 @Injectable()
 export class WorkspaceService {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(
+        private readonly prisma: PrismaService,
+
+        @Inject('RUNTIME_SERVICE')
+        private readonly runtimeClient: ClientProxy,
+    ) { }
 
     async create(data: {
         userId: string;
@@ -17,8 +30,8 @@ export class WorkspaceService {
                 userId: data.userId,
                 templateId: data.templateId,
                 status: 'PENDING',
-            }
-        })
+            },
+        });
     }
 
     async findMine(userId: string) {
@@ -40,14 +53,19 @@ export class WorkspaceService {
             where: {
                 id: workspaceId,
             },
+            include: {
+                containers: true,
+            },
         });
 
         if (!workspace || workspace.status === 'DELETED') {
-            throw new RpcException('Workspace not found');
+            throw new NotFoundException('Workspace not found');
         }
 
         if (workspace.userId !== userId) {
-            throw new RpcException('You do not own this workspace');
+            throw new ForbiddenException(
+                'You do not own this workspace',
+            );
         }
 
         return workspace;
@@ -56,39 +74,64 @@ export class WorkspaceService {
     async start(userId: string, workspaceId: string) {
         await this.findOne(userId, workspaceId);
 
-        return this.prisma.workspace.update({
-            where: {
-                id: workspaceId,
-            },
-            data: {
-                status: 'PROVISIONING',
-            },
-        });
+        return firstValueFrom(
+            this.runtimeClient
+                .send(
+                    { cmd: 'runtime.start' },
+                    {
+                        userId,
+                        workspaceId,
+                    },
+                )
+                .pipe(timeout(15 * 60 * 1000))
+        );
     }
 
     async stop(userId: string, workspaceId: string) {
         await this.findOne(userId, workspaceId);
 
-        return this.prisma.workspace.update({
-            where: {
-                id: workspaceId,
-            },
-            data: {
-                status: 'STOPPED',
-            },
-        });
+        return firstValueFrom(
+            this.runtimeClient
+                .send(
+                    { cmd: 'runtime.stop' },
+                    {
+                        userId,
+                        workspaceId,
+                    },
+                )
+                .pipe(timeout(30000)),
+        );
+    }
+
+    async getStatus(userId: string, workspaceId: string) {
+        await this.findOne(userId, workspaceId);
+
+        return firstValueFrom(
+            this.runtimeClient
+                .send(
+                    { cmd: 'runtime.status' },
+                    {
+                        userId,
+                        workspaceId,
+                    },
+                )
+                .pipe(timeout(30000)),
+        );
     }
 
     async delete(userId: string, workspaceId: string) {
         await this.findOne(userId, workspaceId);
 
-        return this.prisma.workspace.update({
-            where: {
-                id: workspaceId,
-            },
-            data: {
-                status: 'DELETED',
-            },
-        });
+        return firstValueFrom(
+            this.runtimeClient
+                .send(
+                    { cmd: 'runtime.delete' },
+                    {
+                        userId,
+                        workspaceId,
+                    },
+                )
+                .pipe(timeout(60000)),
+        );
     }
 }

@@ -60,21 +60,33 @@ export class ApiGatewayService {
         return this.send(this.workspaceClient, 'workspace.start', {
             userId,
             workspaceId,
-        });
+        }, 15 * 60 * 1000);
     }
 
     stopWorkspace(userId: string, workspaceId: string) {
         return this.send(this.workspaceClient, 'workspace.stop', {
             userId,
             workspaceId,
-        });
+        }, 30000);
     }
 
     deleteWorkspace(userId: string, workspaceId: string) {
         return this.send(this.workspaceClient, 'workspace.delete', {
             userId,
             workspaceId,
-        });
+        }, 60000);
+    }
+
+    getWorkspaceStatus(userId: string, workspaceId: string) {
+        return this.send(
+            this.workspaceClient,
+            'workspace.status',
+            {
+                userId,
+                workspaceId,
+            },
+            30000,
+        );
     }
 
     private async sendToAuthService(cmd: string, payload: any) {
@@ -87,6 +99,8 @@ export class ApiGatewayService {
                         error?.message ||
                         'Auth service unavailable';
 
+                    console.log(error)
+
                     if (message.includes('Invalid') || message.includes('Unauthorized')) {
                         return throwError(() => new UnauthorizedException(message));
                     }
@@ -97,10 +111,12 @@ export class ApiGatewayService {
         )
     }
 
-    private async send(client: ClientProxy, cmd: string, payload: any) {
+
+
+    private async send(client: ClientProxy, cmd: string, payload: any, timeoutMs = 5000) {
         return firstValueFrom(
             client.send({ cmd }, payload).pipe(
-                timeout(5000),
+                timeout(timeoutMs),
                 catchError((error) => {
                     const message =
                         error?.response?.message ||

@@ -1,10 +1,17 @@
+// apps/workspace-service/src/workspace-service.controller.ts
 import { Controller } from '@nestjs/common';
+import {
+    MessagePattern,
+    Payload,
+} from '@nestjs/microservices';
+
 import { WorkspaceService } from './workspace-service.service';
-import { MessagePattern, Payload } from '@nestjs/microservices';
 
 @Controller()
 export class WorkspaceServiceController {
-    constructor(private readonly workspaceService: WorkspaceService) { }
+    constructor(
+        private readonly workspaceService: WorkspaceService,
+    ) { }
 
     @MessagePattern({ cmd: 'workspace.create' })
     create(
@@ -15,9 +22,7 @@ export class WorkspaceServiceController {
             templateId?: string;
         },
     ) {
-
-        console.log('Received workspace create request:', data);
-        return this.workspaceService.create(data)
+        return this.workspaceService.create(data);
     }
 
     @MessagePattern({ cmd: 'workspace.findMine' })
@@ -26,23 +31,72 @@ export class WorkspaceServiceController {
     }
 
     @MessagePattern({ cmd: 'workspace.findOne' })
-    findOne(@Payload() data: { userId: string; workspaceId: string }) {
-        return this.workspaceService.findOne(data.userId, data.workspaceId);
+    findOne(
+        @Payload()
+        data: {
+            userId: string;
+            workspaceId: string;
+        },
+    ) {
+        return this.workspaceService.findOne(
+            data.userId,
+            data.workspaceId,
+        );
     }
 
     @MessagePattern({ cmd: 'workspace.start' })
-    start(@Payload() data: { userId: string; workspaceId: string }) {
-        return this.workspaceService.start(data.userId, data.workspaceId);
+    start(
+        @Payload()
+        data: {
+            userId: string;
+            workspaceId: string;
+        },
+    ) {
+        return this.workspaceService.start(
+            data.userId,
+            data.workspaceId,
+        );
     }
 
     @MessagePattern({ cmd: 'workspace.stop' })
-    stop(@Payload() data: { userId: string; workspaceId: string }) {
-        return this.workspaceService.stop(data.userId, data.workspaceId);
+    stop(
+        @Payload()
+        data: {
+            userId: string;
+            workspaceId: string;
+        },
+    ) {
+        return this.workspaceService.stop(
+            data.userId,
+            data.workspaceId,
+        );
+    }
+
+    @MessagePattern({ cmd: 'workspace.status' })
+    status(
+        @Payload()
+        data: {
+            userId: string;
+            workspaceId: string;
+        },
+    ) {
+        return this.workspaceService.getStatus(
+            data.userId,
+            data.workspaceId,
+        );
     }
 
     @MessagePattern({ cmd: 'workspace.delete' })
-    delete(@Payload() data: { userId: string; workspaceId: string }) {
-        return this.workspaceService.delete(data.userId, data.workspaceId);
+    delete(
+        @Payload()
+        data: {
+            userId: string;
+            workspaceId: string;
+        },
+    ) {
+        return this.workspaceService.delete(
+            data.userId,
+            data.workspaceId,
+        );
     }
-
 }

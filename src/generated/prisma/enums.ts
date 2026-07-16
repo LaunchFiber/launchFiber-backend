@@ -28,3 +28,23 @@ export const UserRole = {
 } as const
 
 export type UserRole = (typeof UserRole)[keyof typeof UserRole]
+
+
+export const RuntimeContainerType = {
+  IDE: 'IDE',
+  FIBER_RUNTIME: 'FIBER_RUNTIME',
+  PREVIEW: 'PREVIEW',
+  TEST_RUNNER: 'TEST_RUNNER'
+} as const
+
+export type RuntimeContainerType = (typeof RuntimeContainerType)[keyof typeof RuntimeContainerType]
+
+
+export const RuntimeContainerStatus = {
+  CREATED: 'CREATED',
+  RUNNING: 'RUNNING',
+  STOPPED: 'STOPPED',
+  FAILED: 'FAILED'
+} as const
+
+export type RuntimeContainerStatus = (typeof RuntimeContainerStatus)[keyof typeof RuntimeContainerStatus]

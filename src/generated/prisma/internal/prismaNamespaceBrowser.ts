@@ -51,8 +51,9 @@ export const AnyNull = runtime.AnyNull
 
 
 export const ModelName = {
+  User: 'User',
   Workspace: 'Workspace',
-  User: 'User'
+  WorkspaceContainer: 'WorkspaceContainer'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -71,19 +72,6 @@ export const TransactionIsolationLevel = runtime.makeStrictEnum({
 export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
 
 
-export const WorkspaceScalarFieldEnum = {
-  id: 'id',
-  name: 'name',
-  status: 'status',
-  userId: 'userId',
-  templateId: 'templateId',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-} as const
-
-export type WorkspaceScalarFieldEnum = (typeof WorkspaceScalarFieldEnum)[keyof typeof WorkspaceScalarFieldEnum]
-
-
 export const UserScalarFieldEnum = {
   id: 'id',
   name: 'name',
@@ -95,6 +83,40 @@ export const UserScalarFieldEnum = {
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
+
+
+export const WorkspaceScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  status: 'status',
+  userId: 'userId',
+  templateId: 'templateId',
+  runtimeNetwork: 'runtimeNetwork',
+  runtimeVolume: 'runtimeVolume',
+  lastStartedAt: 'lastStartedAt',
+  lastStoppedAt: 'lastStoppedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type WorkspaceScalarFieldEnum = (typeof WorkspaceScalarFieldEnum)[keyof typeof WorkspaceScalarFieldEnum]
+
+
+export const WorkspaceContainerScalarFieldEnum = {
+  id: 'id',
+  workspaceId: 'workspaceId',
+  containerId: 'containerId',
+  name: 'name',
+  type: 'type',
+  image: 'image',
+  status: 'status',
+  internalPort: 'internalPort',
+  hostPort: 'hostPort',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type WorkspaceContainerScalarFieldEnum = (typeof WorkspaceContainerScalarFieldEnum)[keyof typeof WorkspaceContainerScalarFieldEnum]
 
 
 export const SortOrder = {

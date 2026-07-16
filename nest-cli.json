@@ -38,6 +38,15 @@
         "tsConfigPath": "libs/prisma/tsconfig.lib.json"
       }
     },
+    "runtime-service": {
+      "type": "application",
+      "root": "apps/runtime-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/runtime-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/runtime-service/tsconfig.app.json"
+      }
+    },
     "workspace-service": {
       "type": "application",
       "root": "apps/workspace-service",

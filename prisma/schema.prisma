@@ -23,19 +23,18 @@ enum UserRole {
     ADMIN
 }
 
-model Workspace {
-    id         String          @id @default(uuid())
-    name       String
-    status     WorkspaceStatus @default(PENDING)
-    userId     String
-    templateId String?
-    createdAt  DateTime        @default(now())
-    updatedAt  DateTime        @updatedAt
+enum RuntimeContainerType {
+    IDE
+    FIBER_RUNTIME
+    PREVIEW
+    TEST_RUNNER
+}
 
-    // Relation
-    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-    @@index([userId])
+enum RuntimeContainerStatus {
+    CREATED
+    RUNNING
+    STOPPED
+    FAILED
 }
 
 model User {
@@ -49,4 +48,50 @@ model User {
 
     // Relation
     workspaces Workspace[]
+}
+
+model Workspace {
+    id     String          @id @default(uuid())
+    name   String
+    status WorkspaceStatus @default(PENDING)
+
+    // Relation
+    userId String
+    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    templateId String?
+
+    runtimeNetwork String?
+    runtimeVolume  String?
+
+    lastStartedAt DateTime?
+    lastStoppedAt DateTime?
+
+    containers WorkspaceContainer[]
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([userId])
+}
+
+model WorkspaceContainer {
+    id          String    @id @default(uuid())
+    workspaceId String
+    workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+    containerId String                 @unique
+    name        String
+    type        RuntimeContainerType
+    image       String
+    status      RuntimeContainerStatus @default(CREATED)
+
+    internalPort Int?
+    hostPort     Int?
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@unique([workspaceId, type])
+    @@index([workspaceId])
 }

@@ -26,7 +26,7 @@ export class ApiGatewayController {
         return this.gatewayService.login(body);
     }
 
-    @Get('auth/verify')
+    @Post('auth/verify')
     verify(
         @Body()
         body: {
@@ -54,10 +54,7 @@ export class ApiGatewayController {
         @Body() body: { name: string; templateId?: string },
     ) {
 
-        console.log('Created workspace request:', body);
         const user = await this.getUserFromAuthorizationHeader(authorization);
-
-        console.log('User:', user);
 
         return this.gatewayService.createWorkspace({
             userId: user.id,
@@ -113,6 +110,22 @@ export class ApiGatewayController {
 
         return this.gatewayService.deleteWorkspace(user.id, id);
     }
+
+    @Get('workspace/:id/status')
+    async getWorkspaceStatus(
+        @Headers('authorization') authorization: string,
+        @Param('id') workspaceId: string,
+    ) {
+        const user = await this.getUserFromAuthorizationHeader(
+            authorization,
+        );
+
+        return this.gatewayService.getWorkspaceStatus(
+            user.id,
+            workspaceId,
+        );
+    }
+
 
 
     @Get('health')
