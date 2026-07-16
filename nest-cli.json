@@ -47,6 +47,15 @@
         "tsConfigPath": "apps/runtime-service/tsconfig.app.json"
       }
     },
+    "terminal-service": {
+      "type": "application",
+      "root": "apps/terminal-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/terminal-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/terminal-service/tsconfig.app.json"
+      }
+    },
     "workspace-service": {
       "type": "application",
       "root": "apps/workspace-service",
