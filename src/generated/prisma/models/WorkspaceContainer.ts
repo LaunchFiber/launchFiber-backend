@@ -41,8 +41,8 @@ export type WorkspaceContainerMinAggregateOutputType = {
   workspaceId: string | null
   containerId: string | null
   name: string | null
-  type: $Enums.RuntimeContainerType | null
   image: string | null
+  type: $Enums.RuntimeContainerType | null
   status: $Enums.RuntimeContainerStatus | null
   internalPort: number | null
   hostPort: number | null
@@ -55,8 +55,8 @@ export type WorkspaceContainerMaxAggregateOutputType = {
   workspaceId: string | null
   containerId: string | null
   name: string | null
-  type: $Enums.RuntimeContainerType | null
   image: string | null
+  type: $Enums.RuntimeContainerType | null
   status: $Enums.RuntimeContainerStatus | null
   internalPort: number | null
   hostPort: number | null
@@ -69,8 +69,8 @@ export type WorkspaceContainerCountAggregateOutputType = {
   workspaceId: number
   containerId: number
   name: number
-  type: number
   image: number
+  type: number
   status: number
   internalPort: number
   hostPort: number
@@ -95,8 +95,8 @@ export type WorkspaceContainerMinAggregateInputType = {
   workspaceId?: true
   containerId?: true
   name?: true
-  type?: true
   image?: true
+  type?: true
   status?: true
   internalPort?: true
   hostPort?: true
@@ -109,8 +109,8 @@ export type WorkspaceContainerMaxAggregateInputType = {
   workspaceId?: true
   containerId?: true
   name?: true
-  type?: true
   image?: true
+  type?: true
   status?: true
   internalPort?: true
   hostPort?: true
@@ -123,8 +123,8 @@ export type WorkspaceContainerCountAggregateInputType = {
   workspaceId?: true
   containerId?: true
   name?: true
-  type?: true
   image?: true
+  type?: true
   status?: true
   internalPort?: true
   hostPort?: true
@@ -224,8 +224,8 @@ export type WorkspaceContainerGroupByOutputType = {
   workspaceId: string
   containerId: string
   name: string
-  type: $Enums.RuntimeContainerType
   image: string
+  type: $Enums.RuntimeContainerType
   status: $Enums.RuntimeContainerStatus
   internalPort: number | null
   hostPort: number | null
@@ -261,8 +261,8 @@ export type WorkspaceContainerWhereInput = {
   workspaceId?: Prisma.StringFilter<"WorkspaceContainer"> | string
   containerId?: Prisma.StringFilter<"WorkspaceContainer"> | string
   name?: Prisma.StringFilter<"WorkspaceContainer"> | string
-  type?: Prisma.EnumRuntimeContainerTypeFilter<"WorkspaceContainer"> | $Enums.RuntimeContainerType
   image?: Prisma.StringFilter<"WorkspaceContainer"> | string
+  type?: Prisma.EnumRuntimeContainerTypeFilter<"WorkspaceContainer"> | $Enums.RuntimeContainerType
   status?: Prisma.EnumRuntimeContainerStatusFilter<"WorkspaceContainer"> | $Enums.RuntimeContainerStatus
   internalPort?: Prisma.IntNullableFilter<"WorkspaceContainer"> | number | null
   hostPort?: Prisma.IntNullableFilter<"WorkspaceContainer"> | number | null
@@ -276,8 +276,8 @@ export type WorkspaceContainerOrderByWithRelationInput = {
   workspaceId?: Prisma.SortOrder
   containerId?: Prisma.SortOrder
   name?: Prisma.SortOrder
-  type?: Prisma.SortOrder
   image?: Prisma.SortOrder
+  type?: Prisma.SortOrder
   status?: Prisma.SortOrder
   internalPort?: Prisma.SortOrderInput | Prisma.SortOrder
   hostPort?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -295,8 +295,8 @@ export type WorkspaceContainerWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.WorkspaceContainerWhereInput | Prisma.WorkspaceContainerWhereInput[]
   workspaceId?: Prisma.StringFilter<"WorkspaceContainer"> | string
   name?: Prisma.StringFilter<"WorkspaceContainer"> | string
-  type?: Prisma.EnumRuntimeContainerTypeFilter<"WorkspaceContainer"> | $Enums.RuntimeContainerType
   image?: Prisma.StringFilter<"WorkspaceContainer"> | string
+  type?: Prisma.EnumRuntimeContainerTypeFilter<"WorkspaceContainer"> | $Enums.RuntimeContainerType
   status?: Prisma.EnumRuntimeContainerStatusFilter<"WorkspaceContainer"> | $Enums.RuntimeContainerStatus
   internalPort?: Prisma.IntNullableFilter<"WorkspaceContainer"> | number | null
   hostPort?: Prisma.IntNullableFilter<"WorkspaceContainer"> | number | null
@@ -310,8 +310,8 @@ export type WorkspaceContainerOrderByWithAggregationInput = {
   workspaceId?: Prisma.SortOrder
   containerId?: Prisma.SortOrder
   name?: Prisma.SortOrder
-  type?: Prisma.SortOrder
   image?: Prisma.SortOrder
+  type?: Prisma.SortOrder
   status?: Prisma.SortOrder
   internalPort?: Prisma.SortOrderInput | Prisma.SortOrder
   hostPort?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -332,8 +332,8 @@ export type WorkspaceContainerScalarWhereWithAggregatesInput = {
   workspaceId?: Prisma.StringWithAggregatesFilter<"WorkspaceContainer"> | string
   containerId?: Prisma.StringWithAggregatesFilter<"WorkspaceContainer"> | string
   name?: Prisma.StringWithAggregatesFilter<"WorkspaceContainer"> | string
-  type?: Prisma.EnumRuntimeContainerTypeWithAggregatesFilter<"WorkspaceContainer"> | $Enums.RuntimeContainerType
   image?: Prisma.StringWithAggregatesFilter<"WorkspaceContainer"> | string
+  type?: Prisma.EnumRuntimeContainerTypeWithAggregatesFilter<"WorkspaceContainer"> | $Enums.RuntimeContainerType
   status?: Prisma.EnumRuntimeContainerStatusWithAggregatesFilter<"WorkspaceContainer"> | $Enums.RuntimeContainerStatus
   internalPort?: Prisma.IntNullableWithAggregatesFilter<"WorkspaceContainer"> | number | null
   hostPort?: Prisma.IntNullableWithAggregatesFilter<"WorkspaceContainer"> | number | null
@@ -345,8 +345,8 @@ export type WorkspaceContainerCreateInput = {
   id?: string
   containerId: string
   name: string
-  type: $Enums.RuntimeContainerType
   image: string
+  type: $Enums.RuntimeContainerType
   status?: $Enums.RuntimeContainerStatus
   internalPort?: number | null
   hostPort?: number | null
@@ -360,8 +360,8 @@ export type WorkspaceContainerUncheckedCreateInput = {
   workspaceId: string
   containerId: string
   name: string
-  type: $Enums.RuntimeContainerType
   image: string
+  type: $Enums.RuntimeContainerType
   status?: $Enums.RuntimeContainerStatus
   internalPort?: number | null
   hostPort?: number | null
@@ -373,8 +373,8 @@ export type WorkspaceContainerUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   containerId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  type?: Prisma.EnumRuntimeContainerTypeFieldUpdateOperationsInput | $Enums.RuntimeContainerType
   image?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumRuntimeContainerTypeFieldUpdateOperationsInput | $Enums.RuntimeContainerType
   status?: Prisma.EnumRuntimeContainerStatusFieldUpdateOperationsInput | $Enums.RuntimeContainerStatus
   internalPort?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   hostPort?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -388,8 +388,8 @@ export type WorkspaceContainerUncheckedUpdateInput = {
   workspaceId?: Prisma.StringFieldUpdateOperationsInput | string
   containerId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  type?: Prisma.EnumRuntimeContainerTypeFieldUpdateOperationsInput | $Enums.RuntimeContainerType
   image?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumRuntimeContainerTypeFieldUpdateOperationsInput | $Enums.RuntimeContainerType
   status?: Prisma.EnumRuntimeContainerStatusFieldUpdateOperationsInput | $Enums.RuntimeContainerStatus
   internalPort?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   hostPort?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -402,8 +402,8 @@ export type WorkspaceContainerCreateManyInput = {
   workspaceId: string
   containerId: string
   name: string
-  type: $Enums.RuntimeContainerType
   image: string
+  type: $Enums.RuntimeContainerType
   status?: $Enums.RuntimeContainerStatus
   internalPort?: number | null
   hostPort?: number | null
@@ -415,8 +415,8 @@ export type WorkspaceContainerUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   containerId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  type?: Prisma.EnumRuntimeContainerTypeFieldUpdateOperationsInput | $Enums.RuntimeContainerType
   image?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumRuntimeContainerTypeFieldUpdateOperationsInput | $Enums.RuntimeContainerType
   status?: Prisma.EnumRuntimeContainerStatusFieldUpdateOperationsInput | $Enums.RuntimeContainerStatus
   internalPort?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   hostPort?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -429,8 +429,8 @@ export type WorkspaceContainerUncheckedUpdateManyInput = {
   workspaceId?: Prisma.StringFieldUpdateOperationsInput | string
   containerId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  type?: Prisma.EnumRuntimeContainerTypeFieldUpdateOperationsInput | $Enums.RuntimeContainerType
   image?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumRuntimeContainerTypeFieldUpdateOperationsInput | $Enums.RuntimeContainerType
   status?: Prisma.EnumRuntimeContainerStatusFieldUpdateOperationsInput | $Enums.RuntimeContainerStatus
   internalPort?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   hostPort?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -458,8 +458,8 @@ export type WorkspaceContainerCountOrderByAggregateInput = {
   workspaceId?: Prisma.SortOrder
   containerId?: Prisma.SortOrder
   name?: Prisma.SortOrder
-  type?: Prisma.SortOrder
   image?: Prisma.SortOrder
+  type?: Prisma.SortOrder
   status?: Prisma.SortOrder
   internalPort?: Prisma.SortOrder
   hostPort?: Prisma.SortOrder
@@ -477,8 +477,8 @@ export type WorkspaceContainerMaxOrderByAggregateInput = {
   workspaceId?: Prisma.SortOrder
   containerId?: Prisma.SortOrder
   name?: Prisma.SortOrder
-  type?: Prisma.SortOrder
   image?: Prisma.SortOrder
+  type?: Prisma.SortOrder
   status?: Prisma.SortOrder
   internalPort?: Prisma.SortOrder
   hostPort?: Prisma.SortOrder
@@ -491,8 +491,8 @@ export type WorkspaceContainerMinOrderByAggregateInput = {
   workspaceId?: Prisma.SortOrder
   containerId?: Prisma.SortOrder
   name?: Prisma.SortOrder
-  type?: Prisma.SortOrder
   image?: Prisma.SortOrder
+  type?: Prisma.SortOrder
   status?: Prisma.SortOrder
   internalPort?: Prisma.SortOrder
   hostPort?: Prisma.SortOrder
@@ -567,8 +567,8 @@ export type WorkspaceContainerCreateWithoutWorkspaceInput = {
   id?: string
   containerId: string
   name: string
-  type: $Enums.RuntimeContainerType
   image: string
+  type: $Enums.RuntimeContainerType
   status?: $Enums.RuntimeContainerStatus
   internalPort?: number | null
   hostPort?: number | null
@@ -580,8 +580,8 @@ export type WorkspaceContainerUncheckedCreateWithoutWorkspaceInput = {
   id?: string
   containerId: string
   name: string
-  type: $Enums.RuntimeContainerType
   image: string
+  type: $Enums.RuntimeContainerType
   status?: $Enums.RuntimeContainerStatus
   internalPort?: number | null
   hostPort?: number | null
@@ -623,8 +623,8 @@ export type WorkspaceContainerScalarWhereInput = {
   workspaceId?: Prisma.StringFilter<"WorkspaceContainer"> | string
   containerId?: Prisma.StringFilter<"WorkspaceContainer"> | string
   name?: Prisma.StringFilter<"WorkspaceContainer"> | string
-  type?: Prisma.EnumRuntimeContainerTypeFilter<"WorkspaceContainer"> | $Enums.RuntimeContainerType
   image?: Prisma.StringFilter<"WorkspaceContainer"> | string
+  type?: Prisma.EnumRuntimeContainerTypeFilter<"WorkspaceContainer"> | $Enums.RuntimeContainerType
   status?: Prisma.EnumRuntimeContainerStatusFilter<"WorkspaceContainer"> | $Enums.RuntimeContainerStatus
   internalPort?: Prisma.IntNullableFilter<"WorkspaceContainer"> | number | null
   hostPort?: Prisma.IntNullableFilter<"WorkspaceContainer"> | number | null
@@ -636,8 +636,8 @@ export type WorkspaceContainerCreateManyWorkspaceInput = {
   id?: string
   containerId: string
   name: string
-  type: $Enums.RuntimeContainerType
   image: string
+  type: $Enums.RuntimeContainerType
   status?: $Enums.RuntimeContainerStatus
   internalPort?: number | null
   hostPort?: number | null
@@ -649,8 +649,8 @@ export type WorkspaceContainerUpdateWithoutWorkspaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   containerId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  type?: Prisma.EnumRuntimeContainerTypeFieldUpdateOperationsInput | $Enums.RuntimeContainerType
   image?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumRuntimeContainerTypeFieldUpdateOperationsInput | $Enums.RuntimeContainerType
   status?: Prisma.EnumRuntimeContainerStatusFieldUpdateOperationsInput | $Enums.RuntimeContainerStatus
   internalPort?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   hostPort?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -662,8 +662,8 @@ export type WorkspaceContainerUncheckedUpdateWithoutWorkspaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   containerId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  type?: Prisma.EnumRuntimeContainerTypeFieldUpdateOperationsInput | $Enums.RuntimeContainerType
   image?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumRuntimeContainerTypeFieldUpdateOperationsInput | $Enums.RuntimeContainerType
   status?: Prisma.EnumRuntimeContainerStatusFieldUpdateOperationsInput | $Enums.RuntimeContainerStatus
   internalPort?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   hostPort?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -675,8 +675,8 @@ export type WorkspaceContainerUncheckedUpdateManyWithoutWorkspaceInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   containerId?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  type?: Prisma.EnumRuntimeContainerTypeFieldUpdateOperationsInput | $Enums.RuntimeContainerType
   image?: Prisma.StringFieldUpdateOperationsInput | string
+  type?: Prisma.EnumRuntimeContainerTypeFieldUpdateOperationsInput | $Enums.RuntimeContainerType
   status?: Prisma.EnumRuntimeContainerStatusFieldUpdateOperationsInput | $Enums.RuntimeContainerStatus
   internalPort?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   hostPort?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -691,8 +691,8 @@ export type WorkspaceContainerSelect<ExtArgs extends runtime.Types.Extensions.In
   workspaceId?: boolean
   containerId?: boolean
   name?: boolean
-  type?: boolean
   image?: boolean
+  type?: boolean
   status?: boolean
   internalPort?: boolean
   hostPort?: boolean
@@ -706,8 +706,8 @@ export type WorkspaceContainerSelectCreateManyAndReturn<ExtArgs extends runtime.
   workspaceId?: boolean
   containerId?: boolean
   name?: boolean
-  type?: boolean
   image?: boolean
+  type?: boolean
   status?: boolean
   internalPort?: boolean
   hostPort?: boolean
@@ -721,8 +721,8 @@ export type WorkspaceContainerSelectUpdateManyAndReturn<ExtArgs extends runtime.
   workspaceId?: boolean
   containerId?: boolean
   name?: boolean
-  type?: boolean
   image?: boolean
+  type?: boolean
   status?: boolean
   internalPort?: boolean
   hostPort?: boolean
@@ -736,8 +736,8 @@ export type WorkspaceContainerSelectScalar = {
   workspaceId?: boolean
   containerId?: boolean
   name?: boolean
-  type?: boolean
   image?: boolean
+  type?: boolean
   status?: boolean
   internalPort?: boolean
   hostPort?: boolean
@@ -745,7 +745,7 @@ export type WorkspaceContainerSelectScalar = {
   updatedAt?: boolean
 }
 
-export type WorkspaceContainerOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "workspaceId" | "containerId" | "name" | "type" | "image" | "status" | "internalPort" | "hostPort" | "createdAt" | "updatedAt", ExtArgs["result"]["workspaceContainer"]>
+export type WorkspaceContainerOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "workspaceId" | "containerId" | "name" | "image" | "type" | "status" | "internalPort" | "hostPort" | "createdAt" | "updatedAt", ExtArgs["result"]["workspaceContainer"]>
 export type WorkspaceContainerInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   workspace?: boolean | Prisma.WorkspaceDefaultArgs<ExtArgs>
 }
@@ -766,8 +766,8 @@ export type $WorkspaceContainerPayload<ExtArgs extends runtime.Types.Extensions.
     workspaceId: string
     containerId: string
     name: string
-    type: $Enums.RuntimeContainerType
     image: string
+    type: $Enums.RuntimeContainerType
     status: $Enums.RuntimeContainerStatus
     internalPort: number | null
     hostPort: number | null
@@ -1201,8 +1201,8 @@ export interface WorkspaceContainerFieldRefs {
   readonly workspaceId: Prisma.FieldRef<"WorkspaceContainer", 'String'>
   readonly containerId: Prisma.FieldRef<"WorkspaceContainer", 'String'>
   readonly name: Prisma.FieldRef<"WorkspaceContainer", 'String'>
-  readonly type: Prisma.FieldRef<"WorkspaceContainer", 'RuntimeContainerType'>
   readonly image: Prisma.FieldRef<"WorkspaceContainer", 'String'>
+  readonly type: Prisma.FieldRef<"WorkspaceContainer", 'RuntimeContainerType'>
   readonly status: Prisma.FieldRef<"WorkspaceContainer", 'RuntimeContainerStatus'>
   readonly internalPort: Prisma.FieldRef<"WorkspaceContainer", 'Int'>
   readonly hostPort: Prisma.FieldRef<"WorkspaceContainer", 'Int'>

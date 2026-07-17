@@ -32,6 +32,7 @@ export type UserRole = (typeof UserRole)[keyof typeof UserRole]
 
 export const RuntimeContainerType = {
   IDE: 'IDE',
+  CKB_NODE: 'CKB_NODE',
   FIBER_RUNTIME: 'FIBER_RUNTIME',
   PREVIEW: 'PREVIEW',
   TEST_RUNNER: 'TEST_RUNNER'
@@ -42,6 +43,7 @@ export type RuntimeContainerType = (typeof RuntimeContainerType)[keyof typeof Ru
 
 export const RuntimeContainerStatus = {
   CREATED: 'CREATED',
+  STARTING: 'STARTING',
   RUNNING: 'RUNNING',
   STOPPED: 'STOPPED',
   FAILED: 'FAILED'

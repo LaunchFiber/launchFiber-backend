@@ -1,99 +1,109 @@
 generator client {
-    provider     = "prisma-client"
-    output       = "../src/generated/prisma"
-    moduleFormat = "cjs"
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "cjs"
 }
 
 datasource db {
-    provider = "postgresql"
+  provider = "postgresql"
 }
 
 enum WorkspaceStatus {
-    PENDING
-    PROVISIONING
-    RUNNING
-    IDLE
-    STOPPED
-    FAILED
-    DELETED
+  PENDING
+  PROVISIONING
+  RUNNING
+  IDLE
+  STOPPED
+  FAILED
+  DELETED
 }
 
 enum UserRole {
-    USER
-    ADMIN
+  USER
+  ADMIN
 }
 
 enum RuntimeContainerType {
-    IDE
-    CKB_NODE
-    FIBER_RUNTIME
-    PREVIEW
-    TEST_RUNNER
+  IDE
+  CKB_NODE
+  FIBER_RUNTIME
+  PREVIEW
+  TEST_RUNNER
 }
 
 enum RuntimeContainerStatus {
-    CREATED
-    RUNNING
-    STOPPED
-    FAILED
+  CREATED
+  STARTING
+  RUNNING
+  STOPPED
+  FAILED
 }
 
 model User {
-    id           String   @id @default(uuid())
-    name         String
-    email        String   @unique
-    passwordHash String
-    role         UserRole @default(USER)
-    createdAt    DateTime @default(now())
-    updatedAt    DateTime @updatedAt
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         UserRole @default(USER)
 
-    // Relation
-    workspaces Workspace[]
+  workspaces Workspace[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Workspace {
-    id     String          @id @default(uuid())
-    name   String
-    status WorkspaceStatus @default(PENDING)
+  id     String          @id @default(uuid())
+  name   String
+  status WorkspaceStatus @default(PENDING)
 
-    // Relation
-    userId String
-    user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
 
-    templateId String?
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-    runtimeNetwork String?
-    runtimeVolume  String?
-    ckbDataVolume  String?
+  templateId String?
 
-    lastStartedAt DateTime?
-    lastStoppedAt DateTime?
+  runtimeNetwork String?
+  runtimeVolume  String?
+  ckbDataVolume  String?
 
-    containers WorkspaceContainer[]
+  lastStartedAt DateTime?
+  lastStoppedAt DateTime?
 
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  containers WorkspaceContainer[]
 
-    @@index([userId])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
 }
 
 model WorkspaceContainer {
-    id          String    @id @default(uuid())
-    workspaceId String
-    workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  id String @id @default(uuid())
 
-    containerId String                 @unique
-    name        String
-    type        RuntimeContainerType
-    image       String
-    status      RuntimeContainerStatus @default(CREATED)
+  workspaceId String
 
-    internalPort Int?
-    hostPort     Int?
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  containerId String @unique
+  name        String
+  image       String
 
-    @@unique([workspaceId, type])
-    @@index([workspaceId])
+  type RuntimeContainerType
+
+  status RuntimeContainerStatus @default(CREATED)
+
+  internalPort Int?
+  hostPort     Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([workspaceId, type])
+  @@index([workspaceId])
+  @@index([containerId])
+  @@index([status])
+  @@index([type])
 }

@@ -1,429 +1,1263 @@
 // apps/runtime-service/src/runtime-service.service.ts
+
 import {
-  ForbiddenException,
-  Injectable,
-  Logger,
-  NotFoundException,
+    BadRequestException,
+    Injectable,
+    Logger,
+    NotFoundException,
 } from '@nestjs/common';
-import { DockerService } from './docker.service';
-import { PrismaService } from 'libs/prisma/src/prisma.service';
+
 import {
-  DeleteWorkspacePayload,
-  StartWorkspacePayload,
-  StopWorkspacePayload,
+    RuntimeContainerStatus,
+    RuntimeContainerType,
+    WorkspaceStatus,
+} from 'src/generated/prisma/enums';
+
+import { PrismaService } from 'libs/prisma/src/prisma.service';
+
+import { DockerService } from './docker/docker.service';
+
+import type {
+    DeleteWorkspacePayload,
+    StartWorkspacePayload,
+    StopWorkspacePayload,
+    WorkspaceStatusPayload,
 } from './runtime.types';
+
+interface InitializeProjectOptions {
+    runtimeContainerId: string;
+    projectName: string;
+    contractName: string;
+}
 
 @Injectable()
 export class RuntimeServiceService {
-  private readonly logger = new Logger(
-    RuntimeServiceService.name,
-  );
-
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly docker: DockerService,
-  ) { }
-
-  async health() {
-    const dockerAvailable = await this.docker.ping();
-
-    return {
-      status: dockerAvailable ? 'ok' : 'unavailable',
-      service: 'runtime-service',
-      docker: dockerAvailable,
-      timestamp: new Date().toISOString(),
-    };
-  }
-
-  async startWorkspace(payload: StartWorkspacePayload) {
-    const workspace = await this.findOwnedWorkspace(
-      payload.workspaceId,
-      payload.userId,
+    private readonly logger = new Logger(
+        RuntimeServiceService.name,
     );
 
-    const workspaceName = this.safeName(workspace.id);
-    const networkName = `fiberdev-${workspaceName}-network`;
-    const volumeName = `fiberdev-${workspaceName}-volume`;
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly docker: DockerService,
+    ) { }
 
-    await this.prisma.workspace.update({
-      where: {
-        id: workspace.id,
-      },
-      data: {
-        status: 'PROVISIONING',
-      },
-    });
+    async health() {
+        await this.docker.ping();
 
-    try {
-      await this.docker.createNetwork(networkName);
-      await this.docker.createVolume(volumeName);
+        return {
+            service: 'runtime-service',
+            status: 'ok',
+            timestamp: new Date().toISOString(),
+        };
+    }
 
-      const definitions = [
-        {
-          type: 'IDE',
-          name: `fiberdev-${workspaceName}-ide`,
-          image:
-            process.env.IDE_CONTAINER_IMAGE ||
-            'codercom/code-server:latest',
-          exposedPort: '8080/tcp',
-          command: [
-            '--bind-addr',
-            '0.0.0.0:8080',
-            '--auth',
-            'none',
-            '/workspace',
-          ],
-        },
-        {
-          type: 'FIBER_RUNTIME',
-          name: `fiberdev-${workspaceName}-runtime`,
-          image:
-            process.env.FIBER_RUNTIME_IMAGE ||
-            'rust:1.82-bookworm',
-          command: [
-            'sh',
-            '-c',
-            'while true; do sleep 3600; done',
-          ],
-        },
-        {
-          type: 'PREVIEW',
-          name: `fiberdev-${workspaceName}-preview`,
-          image:
-            process.env.PREVIEW_CONTAINER_IMAGE ||
-            'node:22-bookworm',
-          exposedPort: '3000/tcp',
-          command: [
-            'sh',
-            '-c',
-            'while true; do sleep 3600; done',
-          ],
-        },
-        {
-          type: 'TEST_RUNNER',
-          name: `fiberdev-${workspaceName}-test`,
-          image:
-            process.env.TEST_RUNNER_IMAGE ||
-            'rust:1.82-bookworm',
-          command: [
-            'sh',
-            '-c',
-            'while true; do sleep 3600; done',
-          ],
-        },
-      ];
+    async startWorkspace(
+        input: StartWorkspacePayload,
+    ) {
+        const workspace = await this.getWorkspace(
+            input.workspaceId,
+            input.userId,
+        );
 
-      const createdContainers: any[] = [];
+        if (
+            workspace.status === WorkspaceStatus.DELETED
+        ) {
+            throw new BadRequestException(
+                'Deleted workspace cannot be started',
+            );
+        }
 
-      for (const definition of definitions) {
-        const container =
-          await this.docker.createContainer({
-            name: definition.name,
-            image: definition.image,
-            networkName,
-            volumeName,
+        if (
+            workspace.status === WorkspaceStatus.RUNNING
+        ) {
+            return this.getWorkspaceRuntime(
+                workspace.id,
+                workspace.userId,
+            );
+        }
+
+        await this.prisma.workspace.update({
+            where: {
+                id: workspace.id,
+            },
+
+            data: {
+                status: WorkspaceStatus.PROVISIONING,
+            },
+        });
+
+        const safeWorkspaceId = this.safeName(
+            workspace.id,
+        );
+
+        const networkName =
+            workspace.runtimeNetwork ??
+            `fiberdev-${safeWorkspaceId}-network`;
+
+        const workspaceVolume =
+            workspace.runtimeVolume ??
+            `fiberdev-${safeWorkspaceId}-workspace`;
+
+        const ckbDataVolume =
+            workspace.ckbDataVolume ??
+            `fiberdev-${safeWorkspaceId}-ckb-data`;
+
+        const ckbContainerName =
+            `fiberdev-${safeWorkspaceId}-ckb`;
+
+        const runtimeContainerName =
+            `fiberdev-${safeWorkspaceId}-runtime`;
+
+        try {
+            await this.docker.createNetwork(
+                networkName,
+            );
+
+            await this.docker.createVolume(
+                workspaceVolume,
+            );
+
+            await this.docker.createVolume(
+                ckbDataVolume,
+            );
+
+            await this.prisma.workspace.update({
+                where: {
+                    id: workspace.id,
+                },
+
+                data: {
+                    runtimeNetwork: networkName,
+                    runtimeVolume: workspaceVolume,
+                    ckbDataVolume,
+                },
+            });
+
+            const ckbContainer =
+                await this.createCkbContainer({
+                    workspaceId: workspace.id,
+                    networkName,
+                    ckbDataVolume,
+                    containerName: ckbContainerName,
+                });
+
+            await this.setContainerStatus(
+                workspace.id,
+                RuntimeContainerType.CKB_NODE,
+                RuntimeContainerStatus.STARTING,
+            );
+
+            await this.docker.startContainer(
+                ckbContainer.id,
+            );
+
+            await this.docker.waitForContainer(
+                ckbContainer.id,
+            );
+
+            await this.docker.waitForCkbRpc(
+                ckbContainer.id,
+            );
+
+            await this.saveContainerRecord({
+                workspaceId: workspace.id,
+                containerId: ckbContainer.id,
+                name: ckbContainerName,
+                image: this.ckbNodeImage,
+                type: RuntimeContainerType.CKB_NODE,
+                status:
+                    RuntimeContainerStatus.RUNNING,
+                internalPort: 8114,
+            });
+
+            const runtimeContainer =
+                await this.createRuntimeContainer({
+                    workspaceId: workspace.id,
+                    userId: workspace.userId,
+                    networkName,
+                    workspaceVolume,
+                    containerName: runtimeContainerName,
+                    ckbContainerName,
+                });
+
+            await this.setContainerStatus(
+                workspace.id,
+                RuntimeContainerType.FIBER_RUNTIME,
+                RuntimeContainerStatus.STARTING,
+            );
+
+            await this.docker.startContainer(
+                runtimeContainer.id,
+            );
+
+            await this.docker.waitForContainer(
+                runtimeContainer.id,
+            );
+
+            await this.saveContainerRecord({
+                workspaceId: workspace.id,
+                containerId: runtimeContainer.id,
+                name: runtimeContainerName,
+                image: this.runtimeImage,
+                type:
+                    RuntimeContainerType.FIBER_RUNTIME,
+                status:
+                    RuntimeContainerStatus.RUNNING,
+            });
+
+            await this.initializeProject({
+                runtimeContainerId:
+                    runtimeContainer.id,
+                projectName:
+                    this.defaultProjectName,
+                contractName:
+                    this.defaultContractName,
+            });
+
+            const updatedWorkspace =
+                await this.prisma.workspace.update({
+                    where: {
+                        id: workspace.id,
+                    },
+
+                    data: {
+                        status: WorkspaceStatus.RUNNING,
+                        runtimeNetwork: networkName,
+                        runtimeVolume: workspaceVolume,
+                        ckbDataVolume,
+                        lastStartedAt: new Date(),
+                    },
+
+                    include: {
+                        containers: true,
+                    },
+                });
+
+            this.logger.log(
+                `Workspace ${workspace.id} started successfully`,
+            );
+
+            return updatedWorkspace;
+        } catch (error) {
+            const message =
+                error instanceof Error
+                    ? error.message
+                    : 'Workspace provisioning failed';
+
+            this.logger.error(
+                `Failed to start workspace ${workspace.id}: ${message}`,
+            );
+
+            await this.prisma.workspace.update({
+                where: {
+                    id: workspace.id,
+                },
+
+                data: {
+                    status: WorkspaceStatus.FAILED,
+                },
+            });
+
+            await this.markFailedContainers(
+                workspace.id,
+            );
+
+            throw error;
+        }
+    }
+
+    async stopWorkspace(
+        payload: StopWorkspacePayload,
+    ) {
+        const workspace = await this.getWorkspace(
+            payload.workspaceId,
+            payload.userId,
+        );
+
+        const containers =
+            await this.prisma.workspaceContainer.findMany(
+                {
+                    where: {
+                        workspaceId: workspace.id,
+                    },
+
+                    orderBy: {
+                        createdAt: 'desc',
+                    },
+                },
+            );
+
+        for (const container of containers) {
+            try {
+                await this.docker.stopContainer(
+                    container.containerId,
+                );
+
+                await this.prisma.workspaceContainer.update(
+                    {
+                        where: {
+                            id: container.id,
+                        },
+
+                        data: {
+                            status:
+                                RuntimeContainerStatus.STOPPED,
+                        },
+                    },
+                );
+            } catch (error) {
+                const message =
+                    error instanceof Error
+                        ? error.message
+                        : 'Unknown error';
+
+                this.logger.warn(
+                    `Failed to stop container ${container.name}: ${message}`,
+                );
+
+                await this.prisma.workspaceContainer.update(
+                    {
+                        where: {
+                            id: container.id,
+                        },
+
+                        data: {
+                            status:
+                                RuntimeContainerStatus.FAILED,
+                        },
+                    },
+                );
+            }
+        }
+
+        const updatedWorkspace =
+            await this.prisma.workspace.update({
+                where: {
+                    id: workspace.id,
+                },
+
+                data: {
+                    status: WorkspaceStatus.STOPPED,
+                    lastStoppedAt: new Date(),
+                },
+
+                include: {
+                    containers: true,
+                },
+            });
+
+        this.logger.log(
+            `Workspace ${workspace.id} stopped`,
+        );
+
+        return updatedWorkspace;
+    }
+
+    async getWorkspaceStatus(
+        payload: WorkspaceStatusPayload,
+    ) {
+        const workspace = await this.getWorkspace(
+            payload.workspaceId,
+            payload.userId,
+        );
+
+        const databaseContainers =
+            await this.prisma.workspaceContainer.findMany(
+                {
+                    where: {
+                        workspaceId: workspace.id,
+                    },
+
+                    orderBy: {
+                        createdAt: 'asc',
+                    },
+                },
+            );
+
+        const dockerContainers =
+            await this.docker.listWorkspaceContainers(
+                workspace.id,
+            );
+
+        const dockerStateById = new Map(
+            dockerContainers.map((container) => [
+                container.Id,
+                {
+                    state: container.State,
+                    status: container.Status,
+                },
+            ]),
+        );
+
+        return {
             workspaceId: workspace.id,
-            containerType: definition.type,
-            command: definition.command,
-            exposedPort: definition.exposedPort,
-            environment: [
-              `WORKSPACE_ID=${workspace.id}`,
-              `USER_ID=${workspace.userId}`,
-            ],
-          });
+            name: workspace.name,
+            status: workspace.status,
 
-        const inspectedBeforeStart = await container.inspect();
-        const realContainerId = inspectedBeforeStart.Id;
+            runtimeNetwork:
+                workspace.runtimeNetwork,
 
-        await this.docker.startContainer(realContainerId);
+            runtimeVolume:
+                workspace.runtimeVolume,
 
-        const inspected =
-          await this.docker.inspectContainer(realContainerId);
+            ckbDataVolume:
+                workspace.ckbDataVolume,
 
-        const hostPort = definition.exposedPort
-          ? inspected.NetworkSettings.Ports?.[
-            definition.exposedPort
-          ]?.[0]?.HostPort
-          : undefined;
+            lastStartedAt:
+                workspace.lastStartedAt,
 
-        const containerType = definition.type as
-          | 'IDE'
-          | 'FIBER_RUNTIME'
-          | 'PREVIEW'
-          | 'TEST_RUNNER';
+            lastStoppedAt:
+                workspace.lastStoppedAt,
+
+            containers: databaseContainers.map(
+                (container) => {
+                    const dockerState =
+                        dockerStateById.get(
+                            container.containerId,
+                        );
+
+                    return {
+                        id: container.id,
+
+                        containerId:
+                            container.containerId,
+
+                        name: container.name,
+                        image: container.image,
+                        type: container.type,
+                        status: container.status,
+
+                        dockerState:
+                            dockerState?.state ?? 'missing',
+
+                        dockerStatus:
+                            dockerState?.status ??
+                            'Container not found',
+
+                        internalPort:
+                            container.internalPort,
+
+                        hostPort: container.hostPort,
+                    };
+                },
+            ),
+        };
+    }
+
+    async deleteWorkspace(
+        payload: DeleteWorkspacePayload,
+    ) {
+        return this.deleteWorkspaceRuntime(
+            payload.workspaceId,
+            payload.userId,
+            payload.deleteWorkspaceFiles ?? true,
+            payload.deleteCkbData ?? true,
+        );
+    }
+
+    async deleteWorkspaceRuntime(
+        workspaceId: string,
+        userId?: string,
+        deleteWorkspaceFiles = true,
+        deleteCkbData = true,
+    ) {
+        const workspace = await this.getWorkspace(
+            workspaceId,
+            userId,
+        );
+
+        const containers =
+            await this.prisma.workspaceContainer.findMany(
+                {
+                    where: {
+                        workspaceId: workspace.id,
+                    },
+                },
+            );
+
+        for (const container of containers) {
+            try {
+                await this.docker.removeContainer(
+                    container.containerId,
+                );
+            } catch (error) {
+                const message =
+                    error instanceof Error
+                        ? error.message
+                        : 'Unknown error';
+
+                this.logger.warn(
+                    `Failed to remove container ${container.name}: ${message}`,
+                );
+            }
+        }
+
+        await this.prisma.workspaceContainer.deleteMany(
+            {
+                where: {
+                    workspaceId: workspace.id,
+                },
+            },
+        );
+
+        if (workspace.runtimeNetwork) {
+            await this.docker.removeNetwork(
+                workspace.runtimeNetwork,
+            );
+        }
+
+        if (
+            deleteWorkspaceFiles &&
+            workspace.runtimeVolume
+        ) {
+            await this.docker.removeVolume(
+                workspace.runtimeVolume,
+            );
+        }
+
+        if (
+            deleteCkbData &&
+            workspace.ckbDataVolume
+        ) {
+            await this.docker.removeVolume(
+                workspace.ckbDataVolume,
+            );
+        }
+
+        const updatedWorkspace =
+            await this.prisma.workspace.update({
+                where: {
+                    id: workspace.id,
+                },
+
+                data: {
+                    status: WorkspaceStatus.DELETED,
+
+                    runtimeNetwork: null,
+
+                    runtimeVolume:
+                        deleteWorkspaceFiles
+                            ? null
+                            : workspace.runtimeVolume,
+
+                    ckbDataVolume:
+                        deleteCkbData
+                            ? null
+                            : workspace.ckbDataVolume,
+
+                    lastStoppedAt: new Date(),
+                },
+            });
+
+        this.logger.log(
+            `Workspace runtime ${workspace.id} deleted`,
+        );
+
+        return updatedWorkspace;
+    }
+
+    async resetWorkspace(
+        workspaceId: string,
+        userId?: string,
+    ) {
+        const workspace = await this.getWorkspace(
+            workspaceId,
+            userId,
+        );
+
+        await this.deleteWorkspaceRuntime(
+            workspace.id,
+            userId,
+            true,
+            true,
+        );
+
+        await this.prisma.workspace.update({
+            where: {
+                id: workspace.id,
+            },
+
+            data: {
+                status: WorkspaceStatus.PENDING,
+                runtimeNetwork: null,
+                runtimeVolume: null,
+                ckbDataVolume: null,
+            },
+        });
+
+        return this.startWorkspace({
+            workspaceId: workspace.id,
+            userId: workspace.userId,
+        });
+    }
+
+    async getWorkspaceRuntime(
+        workspaceId: string,
+        userId?: string,
+    ) {
+        const workspace = await this.getWorkspace(
+            workspaceId,
+            userId,
+        );
+
+        return this.prisma.workspace.findUnique({
+            where: {
+                id: workspace.id,
+            },
+
+            include: {
+                containers: true,
+            },
+        });
+    }
+
+    async executeRuntimeCommand(
+        workspaceId: string,
+        command: string[],
+        workingDirectory?: string,
+        userId?: string,
+    ) {
+        const workspace = await this.getWorkspace(
+            workspaceId,
+            userId,
+        );
+
+        if (
+            workspace.status !==
+            WorkspaceStatus.RUNNING
+        ) {
+            throw new BadRequestException(
+                'Workspace runtime is not running',
+            );
+        }
 
         const runtimeContainer =
-          await this.prisma.workspaceContainer.upsert({
-            where: {
-              workspaceId_type: {
-                workspaceId: workspace.id,
-                type: containerType,
-              },
-            },
+            await this.prisma.workspaceContainer.findUnique(
+                {
+                    where: {
+                        workspaceId_type: {
+                            workspaceId: workspace.id,
+                            type:
+                                RuntimeContainerType.FIBER_RUNTIME,
+                        },
+                    },
+                },
+            );
 
-            update: {
-              containerId: realContainerId,
-              name: definition.name,
-              image: definition.image,
-              status: 'RUNNING',
+        if (!runtimeContainer) {
+            throw new NotFoundException(
+                'Runtime container not found',
+            );
+        }
 
-              internalPort: definition.exposedPort
-                ? Number(definition.exposedPort.split('/')[0])
-                : null,
+        return this.docker.executeCommand({
+            containerId:
+                runtimeContainer.containerId,
 
-              hostPort: hostPort
-                ? Number(hostPort)
-                : null,
-            },
+            command,
 
-            create: {
-              workspaceId: workspace.id,
-              containerId: realContainerId,
-              name: definition.name,
-              type: containerType,
-              image: definition.image,
-              status: 'RUNNING',
+            workingDirectory:
+                workingDirectory ??
+                `/workspace/${this.defaultProjectName}`,
+        });
+    }
 
-              internalPort: definition.exposedPort
-                ? Number(definition.exposedPort.split('/')[0])
-                : null,
+    async buildProject(
+        workspaceId: string,
+        userId?: string,
+    ) {
+        return this.executeRuntimeCommand(
+            workspaceId,
+            ['make', 'build'],
+            `/workspace/${this.defaultProjectName}`,
+            userId,
+        );
+    }
 
-              hostPort: hostPort
-                ? Number(hostPort)
-                : null,
-            },
-          });
+    async testProject(
+        workspaceId: string,
+        userId?: string,
+    ) {
+        return this.executeRuntimeCommand(
+            workspaceId,
+            ['make', 'test'],
+            `/workspace/${this.defaultProjectName}`,
+            userId,
+        );
+    }
 
-        createdContainers.push(runtimeContainer);
-      }
+    async runDefaultContract(
+        workspaceId: string,
+        userId?: string,
+    ) {
+        return this.executeRuntimeCommand(
+            workspaceId,
+            [
+                'ckb-debugger',
+                '--bin',
+                `build/release/${this.defaultContractName}`,
+            ],
+            `/workspace/${this.defaultProjectName}`,
+            userId,
+        );
+    }
 
-      const updatedWorkspace =
-        await this.prisma.workspace.update({
-          where: {
-            id: workspace.id,
-          },
-          data: {
-            status: 'RUNNING',
-            runtimeNetwork: networkName,
-            runtimeVolume: volumeName,
-            lastStartedAt: new Date(),
-          },
+    private async createCkbContainer(
+        options: {
+            workspaceId: string;
+            networkName: string;
+            ckbDataVolume: string;
+            containerName: string;
+        },
+    ) {
+        const existing =
+            await this.docker.getContainer(
+                options.containerName,
+            );
+
+        if (existing) {
+            const details =
+                await existing.inspect();
+
+            await this.saveContainerRecord({
+                workspaceId: options.workspaceId,
+                containerId: details.Id,
+                name: options.containerName,
+                image: this.ckbNodeImage,
+
+                type:
+                    RuntimeContainerType.CKB_NODE,
+
+                status: details.State.Running
+                    ? RuntimeContainerStatus.RUNNING
+                    : RuntimeContainerStatus.CREATED,
+
+                internalPort: 8114,
+            });
+
+            return existing;
+        }
+
+        const container =
+            await this.docker.createContainer({
+                name: options.containerName,
+                image: this.ckbNodeImage,
+
+                networkName:
+                    options.networkName,
+
+                workspaceId:
+                    options.workspaceId,
+
+                containerType:
+                    RuntimeContainerType.CKB_NODE,
+
+                exposedPorts: [
+                    '8114/tcp',
+                    '28114/tcp',
+                ],
+
+                binds: [
+                    `${options.ckbDataVolume}:/ckb-data`,
+                ],
+
+                environment: [
+                    `WORKSPACE_ID=${options.workspaceId}`,
+                    'HOME=/ckb-data',
+                ],
+
+                memory:
+                    Number(
+                        process.env
+                            .CKB_NODE_MEMORY_BYTES,
+                    ) ||
+                    1024 * 1024 * 1024,
+
+                nanoCpus:
+                    Number(
+                        process.env
+                            .CKB_NODE_NANO_CPUS,
+                    ) ||
+                    1_000_000_000,
+            });
+
+        await this.saveContainerRecord({
+            workspaceId: options.workspaceId,
+            containerId: container.id,
+            name: options.containerName,
+            image: this.ckbNodeImage,
+
+            type:
+                RuntimeContainerType.CKB_NODE,
+
+            status:
+                RuntimeContainerStatus.CREATED,
+
+            internalPort: 8114,
         });
 
-      return {
-        message: 'Workspace runtime started',
-        workspace: updatedWorkspace,
-        containers: createdContainers,
-      };
-    } catch (error) {
-      this.logger.error(
-        `Failed to provision workspace ${workspace.id}`,
-        error,
-      );
-
-      await this.prisma.workspace.update({
-        where: {
-          id: workspace.id,
-        },
-        data: {
-          status: 'FAILED',
-        },
-      });
-
-      throw error;
-    }
-  }
-
-  async stopWorkspace(payload: StopWorkspacePayload) {
-    const workspace = await this.findOwnedWorkspace(
-      payload.workspaceId,
-      payload.userId,
-    );
-
-    const containers =
-      await this.prisma.workspaceContainer.findMany({
-        where: {
-          workspaceId: workspace.id,
-        },
-      });
-
-    for (const container of containers) {
-      await this.docker.stopContainer(
-        container.containerId,
-      );
-
-      await this.prisma.workspaceContainer.update({
-        where: {
-          id: container.id,
-        },
-        data: {
-          status: 'STOPPED',
-        },
-      });
+        return container;
     }
 
-    const updatedWorkspace =
-      await this.prisma.workspace.update({
-        where: {
-          id: workspace.id,
+    private async createRuntimeContainer(
+        options: {
+            workspaceId: string;
+            userId: string;
+            networkName: string;
+            workspaceVolume: string;
+            containerName: string;
+            ckbContainerName: string;
         },
-        data: {
-          status: 'STOPPED',
-          lastStoppedAt: new Date(),
-        },
-      });
+    ) {
+        const existing =
+            await this.docker.getContainer(
+                options.containerName,
+            );
 
-    return {
-      message: 'Workspace runtime stopped',
-      workspace: updatedWorkspace,
-    };
-  }
+        if (existing) {
+            const details =
+                await existing.inspect();
 
-  async getWorkspaceStatus(
-    workspaceId: string,
-    userId: string,
-  ) {
-    const workspace = await this.findOwnedWorkspace(
-      workspaceId,
-      userId,
-    );
+            await this.saveContainerRecord({
+                workspaceId: options.workspaceId,
+                containerId: details.Id,
+                name: options.containerName,
+                image: this.runtimeImage,
 
-    const containers =
-      await this.prisma.workspaceContainer.findMany({
-        where: {
-          workspaceId,
-        },
-        orderBy: {
-          createdAt: 'asc',
-        },
-      });
+                type:
+                    RuntimeContainerType.FIBER_RUNTIME,
 
-    const statuses: any = [];
+                status: details.State.Running
+                    ? RuntimeContainerStatus.RUNNING
+                    : RuntimeContainerStatus.CREATED,
+            });
 
-    for (const container of containers) {
-      try {
-        const details =
-          await this.docker.inspectContainer(
-            container.containerId,
-          );
+            return existing;
+        }
 
-        statuses.push({
-          id: container.id,
-          type: container.type,
-          name: container.name,
-          containerId: container.containerId,
-          running: details.State.Running,
-          dockerStatus: details.State.Status,
-          hostPort: container.hostPort,
-          internalPort: container.internalPort,
+        const container =
+            await this.docker.createContainer({
+                name: options.containerName,
+                image: this.runtimeImage,
+
+                networkName:
+                    options.networkName,
+
+                workspaceId:
+                    options.workspaceId,
+
+                containerType:
+                    RuntimeContainerType.FIBER_RUNTIME,
+
+                command: [
+                    'sh',
+                    '-c',
+                    'while true; do sleep 3600; done',
+                ],
+
+                workingDirectory: '/workspace',
+
+                binds: [
+                    `${options.workspaceVolume}:/workspace`,
+                ],
+
+                environment: [
+                    `WORKSPACE_ID=${options.workspaceId}`,
+                    `USER_ID=${options.userId}`,
+
+                    `CKB_RPC_URL=http://${options.ckbContainerName}:8114`,
+
+                    `CKB_PROXY_RPC_URL=http://${options.ckbContainerName}:28114`,
+
+                    'CARGO_TERM_COLOR=always',
+                    'RUST_BACKTRACE=1',
+                ],
+
+                memory:
+                    Number(
+                        process.env
+                            .RUNTIME_MEMORY_BYTES,
+                    ) ||
+                    2 * 1024 * 1024 * 1024,
+
+                nanoCpus:
+                    Number(
+                        process.env
+                            .RUNTIME_NANO_CPUS,
+                    ) ||
+                    2_000_000_000,
+
+                pidsLimit: 1024,
+            });
+
+        await this.saveContainerRecord({
+            workspaceId: options.workspaceId,
+            containerId: container.id,
+            name: options.containerName,
+            image: this.runtimeImage,
+
+            type:
+                RuntimeContainerType.FIBER_RUNTIME,
+
+            status:
+                RuntimeContainerStatus.CREATED,
         });
-      } catch {
-        statuses.push({
-          id: container.id,
-          type: container.type,
-          name: container.name,
-          containerId: container.containerId,
-          running: false,
-          dockerStatus: 'missing',
-          hostPort: container.hostPort,
-          internalPort: container.internalPort,
-        });
-      }
+
+        return container;
     }
 
-    return {
-      workspace,
-      containers: statuses,
-    };
-  }
+    private async initializeProject(
+        options: InitializeProjectOptions,
+    ): Promise<void> {
+        const projectDirectory =
+            `/workspace/${options.projectName}`;
 
-  async deleteWorkspace(
-    payload: DeleteWorkspacePayload,
-  ) {
-    const workspace = await this.findOwnedWorkspace(
-      payload.workspaceId,
-      payload.userId,
-    );
+        const markerFile =
+            `${projectDirectory}/.fiberdev-initialized`;
 
-    const containers =
-      await this.prisma.workspaceContainer.findMany({
-        where: {
-          workspaceId: workspace.id,
+        const checkMarker =
+            await this.docker.executeCommand({
+                containerId:
+                    options.runtimeContainerId,
+
+                command: [
+                    'test',
+                    '-f',
+                    markerFile,
+                ],
+
+                workingDirectory: '/workspace',
+            });
+
+        if (checkMarker.exitCode === 0) {
+            this.logger.log(
+                `Workspace project ${options.projectName} is already initialized`,
+            );
+
+            return;
+        }
+
+        const checkProjectDirectory =
+            await this.docker.executeCommand({
+                containerId:
+                    options.runtimeContainerId,
+
+                command: [
+                    'test',
+                    '-d',
+                    projectDirectory,
+                ],
+
+                workingDirectory: '/workspace',
+            });
+
+        if (
+            checkProjectDirectory.exitCode !== 0
+        ) {
+            this.logger.log(
+                `Generating CKB project: ${options.projectName}`,
+            );
+
+            const generateProject =
+                await this.docker.executeCommand({
+                    containerId:
+                        options.runtimeContainerId,
+
+                    command: [
+                        'cargo',
+                        'generate',
+                        'gh:cryptape/ckb-script-templates',
+                        'workspace',
+                        '--name',
+                        options.projectName,
+                    ],
+
+                    workingDirectory: '/workspace',
+
+                    environment: [
+                        'CARGO_TERM_COLOR=always',
+                    ],
+                });
+
+            if (
+                generateProject.exitCode !== 0
+            ) {
+                throw new Error(
+                    [
+                        'CKB project generation failed.',
+                        generateProject.stderr,
+                        generateProject.stdout,
+                    ]
+                        .filter(Boolean)
+                        .join('\n'),
+                );
+            }
+        }
+
+        const contractDirectory =
+            `${projectDirectory}/contracts/${options.contractName}`;
+
+        const contractExists =
+            await this.docker.executeCommand({
+                containerId:
+                    options.runtimeContainerId,
+
+                command: [
+                    'test',
+                    '-d',
+                    contractDirectory,
+                ],
+
+                workingDirectory:
+                    projectDirectory,
+            });
+
+        if (contractExists.exitCode !== 0) {
+            this.logger.log(
+                `Generating initial contract: ${options.contractName}`,
+            );
+
+            const generateContract =
+                await this.docker.executeCommand({
+                    containerId:
+                        options.runtimeContainerId,
+
+                    command: [
+                        'make',
+                        'generate',
+                        `CRATE=${options.contractName}`,
+                    ],
+
+                    workingDirectory:
+                        projectDirectory,
+
+                    environment: [
+                        'CARGO_TERM_COLOR=always',
+                    ],
+                });
+
+            if (
+                generateContract.exitCode !== 0
+            ) {
+                throw new Error(
+                    [
+                        'CKB contract generation failed.',
+                        generateContract.stderr,
+                        generateContract.stdout,
+                    ]
+                        .filter(Boolean)
+                        .join('\n'),
+                );
+            }
+        }
+
+        const createMarker =
+            await this.docker.executeCommand({
+                containerId:
+                    options.runtimeContainerId,
+
+                command: [
+                    'touch',
+                    markerFile,
+                ],
+
+                workingDirectory:
+                    projectDirectory,
+            });
+
+        if (createMarker.exitCode !== 0) {
+            throw new Error(
+                `Unable to create project initialization marker: ${createMarker.stderr}`,
+            );
+        }
+
+        this.logger.log(
+            `Workspace project initialized: ${projectDirectory}`,
+        );
+    }
+
+    private async saveContainerRecord(
+        input: {
+            workspaceId: string;
+            containerId: string;
+            name: string;
+            image: string;
+            type: RuntimeContainerType;
+            status: RuntimeContainerStatus;
+            internalPort?: number;
         },
-      });
+    ) {
+        let hostPort: number | null = null;
 
-    for (const container of containers) {
-      await this.docker.removeContainer(
-        container.containerId,
-      );
+        if (input.internalPort) {
+            try {
+                const port =
+                    await this.docker.getContainerPort(
+                        input.containerId,
+                        input.internalPort,
+                    );
+
+                hostPort = port.hostPort;
+            } catch {
+                hostPort = null;
+            }
+        }
+
+        return this.prisma.workspaceContainer.upsert(
+            {
+                where: {
+                    workspaceId_type: {
+                        workspaceId:
+                            input.workspaceId,
+
+                        type: input.type,
+                    },
+                },
+
+                update: {
+                    containerId:
+                        input.containerId,
+
+                    name: input.name,
+                    image: input.image,
+                    status: input.status,
+
+                    internalPort:
+                        input.internalPort ?? null,
+
+                    hostPort,
+                },
+
+                create: {
+                    workspaceId:
+                        input.workspaceId,
+
+                    containerId:
+                        input.containerId,
+
+                    name: input.name,
+                    image: input.image,
+                    type: input.type,
+                    status: input.status,
+
+                    internalPort:
+                        input.internalPort ?? null,
+
+                    hostPort,
+                },
+            },
+        );
     }
 
-    if (workspace.runtimeNetwork) {
-      await this.docker.removeNetwork(
-        workspace.runtimeNetwork,
-      );
+    private async setContainerStatus(
+        workspaceId: string,
+        type: RuntimeContainerType,
+        status: RuntimeContainerStatus,
+    ): Promise<void> {
+        await this.prisma.workspaceContainer.updateMany(
+            {
+                where: {
+                    workspaceId,
+                    type,
+                },
+
+                data: {
+                    status,
+                },
+            },
+        );
     }
 
-    if (workspace.runtimeVolume) {
-      await this.docker.removeVolume(
-        workspace.runtimeVolume,
-      );
+    private async markFailedContainers(
+        workspaceId: string,
+    ): Promise<void> {
+        await this.prisma.workspaceContainer.updateMany(
+            {
+                where: {
+                    workspaceId,
+
+                    status: {
+                        in: [
+                            RuntimeContainerStatus.CREATED,
+                            RuntimeContainerStatus.STARTING,
+                        ],
+                    },
+                },
+
+                data: {
+                    status:
+                        RuntimeContainerStatus.FAILED,
+                },
+            },
+        );
     }
 
-    await this.prisma.workspaceContainer.deleteMany({
-      where: {
-        workspaceId: workspace.id,
-      },
-    });
+    private async getWorkspace(
+        workspaceId: string,
+        userId?: string,
+    ) {
+        const workspace =
+            await this.prisma.workspace.findFirst({
+                where: {
+                    id: workspaceId,
 
-    const deletedWorkspace =
-      await this.prisma.workspace.update({
-        where: {
-          id: workspace.id,
-        },
-        data: {
-          status: 'DELETED',
-          runtimeNetwork: null,
-          runtimeVolume: null,
-        },
-      });
+                    ...(userId
+                        ? {
+                            userId,
+                        }
+                        : {}),
+                },
 
-    return {
-      message: 'Workspace runtime deleted',
-      workspace: deletedWorkspace,
-    };
-  }
+                include: {
+                    containers: true,
+                },
+            });
 
-  private async findOwnedWorkspace(
-    workspaceId: string,
-    userId: string,
-  ) {
-    const workspace =
-      await this.prisma.workspace.findUnique({
-        where: {
-          id: workspaceId,
-        },
-      });
+        if (!workspace) {
+            throw new NotFoundException(
+                'Workspace not found',
+            );
+        }
 
-    if (!workspace || workspace.status === 'DELETED') {
-      throw new NotFoundException(
-        'Workspace not found',
-      );
+        return workspace;
     }
 
-    if (workspace.userId !== userId) {
-      throw new ForbiddenException(
-        'You do not own this workspace',
-      );
+    private safeName(
+        value: string,
+    ): string {
+        return value
+            .toLowerCase()
+            .replace(/[^a-z0-9_.-]/g, '-')
+            .replace(/-+/g, '-')
+            .replace(/^[-_.]+|[-_.]+$/g, '')
+            .slice(0, 48);
     }
 
-    return workspace;
-  }
+    private get ckbNodeImage(): string {
+        return (
+            process.env.CKB_NODE_IMAGE ??
+            'fiberdev/ckb-node:dev'
+        );
+    }
 
-  private safeName(value: string) {
-    return value
-      .toLowerCase()
-      .replace(/[^a-z0-9]/g, '')
-      .slice(0, 20);
-  }
+    private get runtimeImage(): string {
+        return (
+            process.env.FIBER_RUNTIME_IMAGE ??
+            'fiberdev/ckb-runtime:dev'
+        );
+    }
+
+    private get defaultProjectName(): string {
+        return (
+            process.env.DEFAULT_PROJECT_NAME ??
+            'ckb-rust-script'
+        );
+    }
+
+    private get defaultContractName(): string {
+        return (
+            process.env.DEFAULT_CONTRACT_NAME ??
+            'hello-world'
+        );
+    }
 }

@@ -32,6 +32,7 @@ export type WorkspaceMinAggregateOutputType = {
   templateId: string | null
   runtimeNetwork: string | null
   runtimeVolume: string | null
+  ckbDataVolume: string | null
   lastStartedAt: Date | null
   lastStoppedAt: Date | null
   createdAt: Date | null
@@ -46,6 +47,7 @@ export type WorkspaceMaxAggregateOutputType = {
   templateId: string | null
   runtimeNetwork: string | null
   runtimeVolume: string | null
+  ckbDataVolume: string | null
   lastStartedAt: Date | null
   lastStoppedAt: Date | null
   createdAt: Date | null
@@ -60,6 +62,7 @@ export type WorkspaceCountAggregateOutputType = {
   templateId: number
   runtimeNetwork: number
   runtimeVolume: number
+  ckbDataVolume: number
   lastStartedAt: number
   lastStoppedAt: number
   createdAt: number
@@ -76,6 +79,7 @@ export type WorkspaceMinAggregateInputType = {
   templateId?: true
   runtimeNetwork?: true
   runtimeVolume?: true
+  ckbDataVolume?: true
   lastStartedAt?: true
   lastStoppedAt?: true
   createdAt?: true
@@ -90,6 +94,7 @@ export type WorkspaceMaxAggregateInputType = {
   templateId?: true
   runtimeNetwork?: true
   runtimeVolume?: true
+  ckbDataVolume?: true
   lastStartedAt?: true
   lastStoppedAt?: true
   createdAt?: true
@@ -104,6 +109,7 @@ export type WorkspaceCountAggregateInputType = {
   templateId?: true
   runtimeNetwork?: true
   runtimeVolume?: true
+  ckbDataVolume?: true
   lastStartedAt?: true
   lastStoppedAt?: true
   createdAt?: true
@@ -191,6 +197,7 @@ export type WorkspaceGroupByOutputType = {
   templateId: string | null
   runtimeNetwork: string | null
   runtimeVolume: string | null
+  ckbDataVolume: string | null
   lastStartedAt: Date | null
   lastStoppedAt: Date | null
   createdAt: Date
@@ -226,6 +233,7 @@ export type WorkspaceWhereInput = {
   templateId?: Prisma.StringNullableFilter<"Workspace"> | string | null
   runtimeNetwork?: Prisma.StringNullableFilter<"Workspace"> | string | null
   runtimeVolume?: Prisma.StringNullableFilter<"Workspace"> | string | null
+  ckbDataVolume?: Prisma.StringNullableFilter<"Workspace"> | string | null
   lastStartedAt?: Prisma.DateTimeNullableFilter<"Workspace"> | Date | string | null
   lastStoppedAt?: Prisma.DateTimeNullableFilter<"Workspace"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Workspace"> | Date | string
@@ -242,6 +250,7 @@ export type WorkspaceOrderByWithRelationInput = {
   templateId?: Prisma.SortOrderInput | Prisma.SortOrder
   runtimeNetwork?: Prisma.SortOrderInput | Prisma.SortOrder
   runtimeVolume?: Prisma.SortOrderInput | Prisma.SortOrder
+  ckbDataVolume?: Prisma.SortOrderInput | Prisma.SortOrder
   lastStartedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   lastStoppedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -261,6 +270,7 @@ export type WorkspaceWhereUniqueInput = Prisma.AtLeast<{
   templateId?: Prisma.StringNullableFilter<"Workspace"> | string | null
   runtimeNetwork?: Prisma.StringNullableFilter<"Workspace"> | string | null
   runtimeVolume?: Prisma.StringNullableFilter<"Workspace"> | string | null
+  ckbDataVolume?: Prisma.StringNullableFilter<"Workspace"> | string | null
   lastStartedAt?: Prisma.DateTimeNullableFilter<"Workspace"> | Date | string | null
   lastStoppedAt?: Prisma.DateTimeNullableFilter<"Workspace"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Workspace"> | Date | string
@@ -277,6 +287,7 @@ export type WorkspaceOrderByWithAggregationInput = {
   templateId?: Prisma.SortOrderInput | Prisma.SortOrder
   runtimeNetwork?: Prisma.SortOrderInput | Prisma.SortOrder
   runtimeVolume?: Prisma.SortOrderInput | Prisma.SortOrder
+  ckbDataVolume?: Prisma.SortOrderInput | Prisma.SortOrder
   lastStartedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   lastStoppedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -297,6 +308,7 @@ export type WorkspaceScalarWhereWithAggregatesInput = {
   templateId?: Prisma.StringNullableWithAggregatesFilter<"Workspace"> | string | null
   runtimeNetwork?: Prisma.StringNullableWithAggregatesFilter<"Workspace"> | string | null
   runtimeVolume?: Prisma.StringNullableWithAggregatesFilter<"Workspace"> | string | null
+  ckbDataVolume?: Prisma.StringNullableWithAggregatesFilter<"Workspace"> | string | null
   lastStartedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Workspace"> | Date | string | null
   lastStoppedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Workspace"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Workspace"> | Date | string
@@ -310,6 +322,7 @@ export type WorkspaceCreateInput = {
   templateId?: string | null
   runtimeNetwork?: string | null
   runtimeVolume?: string | null
+  ckbDataVolume?: string | null
   lastStartedAt?: Date | string | null
   lastStoppedAt?: Date | string | null
   createdAt?: Date | string
@@ -326,6 +339,7 @@ export type WorkspaceUncheckedCreateInput = {
   templateId?: string | null
   runtimeNetwork?: string | null
   runtimeVolume?: string | null
+  ckbDataVolume?: string | null
   lastStartedAt?: Date | string | null
   lastStoppedAt?: Date | string | null
   createdAt?: Date | string
@@ -340,6 +354,7 @@ export type WorkspaceUpdateInput = {
   templateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   runtimeNetwork?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   runtimeVolume?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ckbDataVolume?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastStoppedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -356,6 +371,7 @@ export type WorkspaceUncheckedUpdateInput = {
   templateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   runtimeNetwork?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   runtimeVolume?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ckbDataVolume?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastStoppedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -371,6 +387,7 @@ export type WorkspaceCreateManyInput = {
   templateId?: string | null
   runtimeNetwork?: string | null
   runtimeVolume?: string | null
+  ckbDataVolume?: string | null
   lastStartedAt?: Date | string | null
   lastStoppedAt?: Date | string | null
   createdAt?: Date | string
@@ -384,6 +401,7 @@ export type WorkspaceUpdateManyMutationInput = {
   templateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   runtimeNetwork?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   runtimeVolume?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ckbDataVolume?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastStoppedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -398,6 +416,7 @@ export type WorkspaceUncheckedUpdateManyInput = {
   templateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   runtimeNetwork?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   runtimeVolume?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ckbDataVolume?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastStoppedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -422,6 +441,7 @@ export type WorkspaceCountOrderByAggregateInput = {
   templateId?: Prisma.SortOrder
   runtimeNetwork?: Prisma.SortOrder
   runtimeVolume?: Prisma.SortOrder
+  ckbDataVolume?: Prisma.SortOrder
   lastStartedAt?: Prisma.SortOrder
   lastStoppedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -436,6 +456,7 @@ export type WorkspaceMaxOrderByAggregateInput = {
   templateId?: Prisma.SortOrder
   runtimeNetwork?: Prisma.SortOrder
   runtimeVolume?: Prisma.SortOrder
+  ckbDataVolume?: Prisma.SortOrder
   lastStartedAt?: Prisma.SortOrder
   lastStoppedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -450,6 +471,7 @@ export type WorkspaceMinOrderByAggregateInput = {
   templateId?: Prisma.SortOrder
   runtimeNetwork?: Prisma.SortOrder
   runtimeVolume?: Prisma.SortOrder
+  ckbDataVolume?: Prisma.SortOrder
   lastStartedAt?: Prisma.SortOrder
   lastStoppedAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -536,6 +558,7 @@ export type WorkspaceCreateWithoutUserInput = {
   templateId?: string | null
   runtimeNetwork?: string | null
   runtimeVolume?: string | null
+  ckbDataVolume?: string | null
   lastStartedAt?: Date | string | null
   lastStoppedAt?: Date | string | null
   createdAt?: Date | string
@@ -550,6 +573,7 @@ export type WorkspaceUncheckedCreateWithoutUserInput = {
   templateId?: string | null
   runtimeNetwork?: string | null
   runtimeVolume?: string | null
+  ckbDataVolume?: string | null
   lastStartedAt?: Date | string | null
   lastStoppedAt?: Date | string | null
   createdAt?: Date | string
@@ -594,6 +618,7 @@ export type WorkspaceScalarWhereInput = {
   templateId?: Prisma.StringNullableFilter<"Workspace"> | string | null
   runtimeNetwork?: Prisma.StringNullableFilter<"Workspace"> | string | null
   runtimeVolume?: Prisma.StringNullableFilter<"Workspace"> | string | null
+  ckbDataVolume?: Prisma.StringNullableFilter<"Workspace"> | string | null
   lastStartedAt?: Prisma.DateTimeNullableFilter<"Workspace"> | Date | string | null
   lastStoppedAt?: Prisma.DateTimeNullableFilter<"Workspace"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Workspace"> | Date | string
@@ -607,6 +632,7 @@ export type WorkspaceCreateWithoutContainersInput = {
   templateId?: string | null
   runtimeNetwork?: string | null
   runtimeVolume?: string | null
+  ckbDataVolume?: string | null
   lastStartedAt?: Date | string | null
   lastStoppedAt?: Date | string | null
   createdAt?: Date | string
@@ -622,6 +648,7 @@ export type WorkspaceUncheckedCreateWithoutContainersInput = {
   templateId?: string | null
   runtimeNetwork?: string | null
   runtimeVolume?: string | null
+  ckbDataVolume?: string | null
   lastStartedAt?: Date | string | null
   lastStoppedAt?: Date | string | null
   createdAt?: Date | string
@@ -651,6 +678,7 @@ export type WorkspaceUpdateWithoutContainersInput = {
   templateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   runtimeNetwork?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   runtimeVolume?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ckbDataVolume?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastStoppedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -666,6 +694,7 @@ export type WorkspaceUncheckedUpdateWithoutContainersInput = {
   templateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   runtimeNetwork?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   runtimeVolume?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ckbDataVolume?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastStoppedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -679,6 +708,7 @@ export type WorkspaceCreateManyUserInput = {
   templateId?: string | null
   runtimeNetwork?: string | null
   runtimeVolume?: string | null
+  ckbDataVolume?: string | null
   lastStartedAt?: Date | string | null
   lastStoppedAt?: Date | string | null
   createdAt?: Date | string
@@ -692,6 +722,7 @@ export type WorkspaceUpdateWithoutUserInput = {
   templateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   runtimeNetwork?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   runtimeVolume?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ckbDataVolume?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastStoppedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -706,6 +737,7 @@ export type WorkspaceUncheckedUpdateWithoutUserInput = {
   templateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   runtimeNetwork?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   runtimeVolume?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ckbDataVolume?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastStoppedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -720,6 +752,7 @@ export type WorkspaceUncheckedUpdateManyWithoutUserInput = {
   templateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   runtimeNetwork?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   runtimeVolume?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ckbDataVolume?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   lastStartedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastStoppedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -765,6 +798,7 @@ export type WorkspaceSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   templateId?: boolean
   runtimeNetwork?: boolean
   runtimeVolume?: boolean
+  ckbDataVolume?: boolean
   lastStartedAt?: boolean
   lastStoppedAt?: boolean
   createdAt?: boolean
@@ -782,6 +816,7 @@ export type WorkspaceSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ext
   templateId?: boolean
   runtimeNetwork?: boolean
   runtimeVolume?: boolean
+  ckbDataVolume?: boolean
   lastStartedAt?: boolean
   lastStoppedAt?: boolean
   createdAt?: boolean
@@ -797,6 +832,7 @@ export type WorkspaceSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ext
   templateId?: boolean
   runtimeNetwork?: boolean
   runtimeVolume?: boolean
+  ckbDataVolume?: boolean
   lastStartedAt?: boolean
   lastStoppedAt?: boolean
   createdAt?: boolean
@@ -812,13 +848,14 @@ export type WorkspaceSelectScalar = {
   templateId?: boolean
   runtimeNetwork?: boolean
   runtimeVolume?: boolean
+  ckbDataVolume?: boolean
   lastStartedAt?: boolean
   lastStoppedAt?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type WorkspaceOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "status" | "userId" | "templateId" | "runtimeNetwork" | "runtimeVolume" | "lastStartedAt" | "lastStoppedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["workspace"]>
+export type WorkspaceOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "status" | "userId" | "templateId" | "runtimeNetwork" | "runtimeVolume" | "ckbDataVolume" | "lastStartedAt" | "lastStoppedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["workspace"]>
 export type WorkspaceInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   containers?: boolean | Prisma.Workspace$containersArgs<ExtArgs>
@@ -845,6 +882,7 @@ export type $WorkspacePayload<ExtArgs extends runtime.Types.Extensions.InternalA
     templateId: string | null
     runtimeNetwork: string | null
     runtimeVolume: string | null
+    ckbDataVolume: string | null
     lastStartedAt: Date | null
     lastStoppedAt: Date | null
     createdAt: Date
@@ -1281,6 +1319,7 @@ export interface WorkspaceFieldRefs {
   readonly templateId: Prisma.FieldRef<"Workspace", 'String'>
   readonly runtimeNetwork: Prisma.FieldRef<"Workspace", 'String'>
   readonly runtimeVolume: Prisma.FieldRef<"Workspace", 'String'>
+  readonly ckbDataVolume: Prisma.FieldRef<"Workspace", 'String'>
   readonly lastStartedAt: Prisma.FieldRef<"Workspace", 'DateTime'>
   readonly lastStoppedAt: Prisma.FieldRef<"Workspace", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"Workspace", 'DateTime'>
