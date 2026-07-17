@@ -38,6 +38,18 @@ import { ApiGatewayService } from './api-gateway.service';
                 })
             },
             {
+                name: 'RUNTIME_SERVICE',
+                imports: [ConfigModule],
+                inject: [ConfigService],
+                useFactory: (config: ConfigService) => ({
+                    transport: Transport.TCP,
+                    options: {
+                        host: config.get<string>('RUNTIME_SERVICE_HOST') || '127.0.0.1',
+                        port: Number(config.get<string>('RUNTIME_SERVICE_PORT')) || 8004,
+                    },
+                }),
+            },
+            {
                 name: 'FILE_SERVICE',
                 imports: [ConfigModule],
                 inject: [ConfigService],
