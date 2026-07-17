@@ -6,6 +6,37 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Docker from 'dockerode';
+import {
+    Duplex,
+    PassThrough,
+} from 'node:stream';
+
+interface CreateContainerOptions {
+    name: string;
+    image: string;
+    networkName: string;
+    workspaceId: string;
+    containerType: string;
+
+    command?: string[];
+    environment?: string[];
+    exposedPorts?: string[];
+
+    binds?: string[];
+}
+
+interface ExecuteCommandOptions {
+    containerId: string;
+    command: string[];
+    workingDirectory?: string;
+    environment?: string[];
+}
+
+interface ExecuteCommandResult {
+    stdout: string;
+    stderr: string;
+    exitCode: number;
+}
 
 @Injectable()
 export class DockerService {
@@ -122,44 +153,36 @@ export class DockerService {
         }
     }
 
-    async createContainer(options: {
-        name: string;
-        image: string;
-        networkName: string;
-        volumeName: string;
-        workspaceId: string;
-        containerType: string;
-        command?: string[];
-        environment?: string[];
-        exposedPort?: string;
-    }): Promise<Docker.Container> {
+    async createContainer(
+        options: CreateContainerOptions,
+    ): Promise<Docker.Container> {
         await this.ensureImage(options.image);
 
-        const exposedPorts = options.exposedPort
-            ? {
-                [options.exposedPort]: {},
-            }
-            : undefined;
+        const exposedPorts = Object.fromEntries(
+            (options.exposedPorts ?? []).map((port) => [
+                port,
+                {},
+            ]),
+        );
 
-        const portBindings = options.exposedPort
-            ? {
-                [options.exposedPort]: [
+        const portBindings = Object.fromEntries(
+            (options.exposedPorts ?? []).map((port) => [
+                port,
+                [
                     {
                         HostIp: '127.0.0.1',
                         HostPort: '',
                     },
                 ],
-            }
-            : undefined;
+            ]),
+        );
 
         try {
-            const existingContainer = this.docker.getContainer(
-                options.name,
-            );
+            const existing =
+                this.docker.getContainer(options.name);
 
-            const details = await existingContainer.inspect();
+            const details = await existing.inspect();
 
-            // Return a new handle using the real Docker ID.
             return this.docker.getContainer(details.Id);
         } catch {
             this.logger.log(
@@ -167,50 +190,50 @@ export class DockerService {
             );
         }
 
-        const createdContainer = await this.docker.createContainer({
-            name: options.name,
-            Image: options.image,
-            Cmd: options.command,
-            Env: options.environment,
-            WorkingDir: '/workspace',
+        const container =
+            await this.docker.createContainer({
+                name: options.name,
+                Image: options.image,
+                Cmd: options.command,
+                Env: options.environment,
 
-            ExposedPorts: exposedPorts,
+                ExposedPorts:
+                    options.exposedPorts?.length
+                        ? exposedPorts
+                        : undefined,
 
-            Labels: {
-                'fiberdev.managed': 'true',
-                'fiberdev.workspace-id': options.workspaceId,
-                'fiberdev.container-type': options.containerType,
-            },
+                Labels: {
+                    'fiberdev.managed': 'true',
+                    'fiberdev.workspace-id':
+                        options.workspaceId,
+                    'fiberdev.container-type':
+                        options.containerType,
+                },
 
-            HostConfig: {
-                AutoRemove: false,
-                NetworkMode: options.networkName,
+                HostConfig: {
+                    AutoRemove: false,
+                    NetworkMode: options.networkName,
 
-                Binds: [`${options.volumeName}:/workspace`],
+                    Binds: options.binds ?? [],
 
-                PortBindings: portBindings,
+                    PortBindings:
+                        options.exposedPorts?.length
+                            ? portBindings
+                            : undefined,
 
-                Memory:
-                    Number(
-                        this.config.get<string>(
-                            'WORKSPACE_CONTAINER_MEMORY',
-                        ),
-                    ) || 268435456,
+                    Memory: 268435456,
+                    NanoCpus: 500000000,
+                    PidsLimit: 256,
 
-                NanoCpus:
-                    Number(
-                        this.config.get<string>(
-                            'WORKSPACE_CONTAINER_CPUS',
-                        ),
-                    ) || 500000000,
+                    SecurityOpt: [
+                        'no-new-privileges:true',
+                    ],
 
-                PidsLimit: 256,
-                SecurityOpt: ['no-new-privileges:true'],
-                CapDrop: ['ALL'],
-            },
-        });
+                    CapDrop: ['ALL'],
+                },
+            });
 
-        const details = await createdContainer.inspect();
+        const details = await container.inspect();
 
         return this.docker.getContainer(details.Id);
     }
@@ -274,5 +297,128 @@ export class DockerService {
                 `Unable to inspect container ${containerId}`,
             );
         }
+    }
+
+    async executeCommand(
+        options: ExecuteCommandOptions,
+    ): Promise<ExecuteCommandResult> {
+        const container =
+            this.docker.getContainer(options.containerId);
+
+        const details = await container.inspect();
+
+        if (!details.State.Running) {
+            throw new Error(
+                `Container ${options.containerId} is not running`,
+            );
+        }
+
+        const exec = await container.exec({
+            AttachStdout: true,
+            AttachStderr: true,
+            Tty: false,
+
+            Cmd: options.command,
+
+            WorkingDir:
+                options.workingDirectory ??
+                '/workspace',
+
+            Env: options.environment,
+        });
+
+        const stream = (await exec.start({
+            hijack: true,
+            stdin: false,
+            Tty: false,
+        })) as Duplex;
+
+        const stdoutStream = new PassThrough();
+        const stderrStream = new PassThrough();
+
+        const stdoutChunks: Buffer[] = [];
+        const stderrChunks: Buffer[] = [];
+
+        stdoutStream.on('data', (chunk: Buffer) => {
+            stdoutChunks.push(Buffer.from(chunk));
+        });
+
+        stderrStream.on('data', (chunk: Buffer) => {
+            stderrChunks.push(Buffer.from(chunk));
+        });
+
+        this.docker.modem.demuxStream(
+            stream,
+            stdoutStream,
+            stderrStream,
+        );
+
+        await new Promise<void>((resolve, reject) => {
+            stream.once('end', resolve);
+            stream.once('close', resolve);
+            stream.once('error', reject);
+        });
+
+        const result = await exec.inspect();
+
+        return {
+            stdout:
+                Buffer.concat(stdoutChunks).toString('utf8'),
+
+            stderr:
+                Buffer.concat(stderrChunks).toString('utf8'),
+
+            exitCode: result.ExitCode ?? 1,
+        };
+    }
+
+    async waitForCkbRpc(
+        containerId: string,
+        attempts = 60,
+        delayMs = 1000,
+    ): Promise<void> {
+        for (
+            let attempt = 1;
+            attempt <= attempts;
+            attempt++
+        ) {
+            const result = await this.executeCommand({
+                containerId,
+
+                command: [
+                    'sh',
+                    '-c',
+                    [
+                        'curl -sS',
+                        '-X POST',
+                        '-H "Content-Type: application/json"',
+                        '--data',
+                        `'{"id":1,"jsonrpc":"2.0","method":"get_tip_block_number","params":[]}'`,
+                        'http://127.0.0.1:8114',
+                    ].join(' '),
+                ],
+
+                workingDirectory: '/',
+            });
+
+            if (
+                result.exitCode === 0 &&
+                result.stdout.includes('"result"')
+            ) {
+                this.logger.log(
+                    'CKB development node is ready',
+                );
+
+                return;
+            }
+
+            await new Promise((resolve) => {
+                setTimeout(resolve, delayMs);
+            });
+        }
+
+        throw new Error(
+            'CKB node failed to become ready',
+        );
     }
 }

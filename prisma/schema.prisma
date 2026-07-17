@@ -25,6 +25,7 @@ enum UserRole {
 
 enum RuntimeContainerType {
     IDE
+    CKB_NODE
     FIBER_RUNTIME
     PREVIEW
     TEST_RUNNER
@@ -63,6 +64,7 @@ model Workspace {
 
     runtimeNetwork String?
     runtimeVolume  String?
+    ckbDataVolume  String?
 
     lastStartedAt DateTime?
     lastStoppedAt DateTime?
