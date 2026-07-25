@@ -6,6 +6,7 @@ import {
     Logger,
     NotFoundException,
 } from '@nestjs/common';
+import { RpcException } from '@nestjs/microservices';
 
 import {
     RuntimeContainerStatus,
@@ -62,7 +63,7 @@ export class RuntimeServiceService {
         if (
             workspace.status === WorkspaceStatus.DELETED
         ) {
-            throw new BadRequestException(
+            throw new RpcException(
                 'Deleted workspace cannot be started',
             );
         }
@@ -626,7 +627,7 @@ export class RuntimeServiceService {
             workspace.status !==
             WorkspaceStatus.RUNNING
         ) {
-            throw new BadRequestException(
+            throw new RpcException(
                 'Workspace runtime is not running',
             );
         }
@@ -645,7 +646,7 @@ export class RuntimeServiceService {
             );
 
         if (!runtimeContainer) {
-            throw new NotFoundException(
+            throw new RpcException(
                 'Runtime container not found',
             );
         }
@@ -982,7 +983,7 @@ export class RuntimeServiceService {
             if (
                 generateProject.exitCode !== 0
             ) {
-                throw new Error(
+                throw new RpcException(
                     [
                         'CKB project generation failed.',
                         generateProject.stderr,
@@ -1039,7 +1040,7 @@ export class RuntimeServiceService {
             if (
                 generateContract.exitCode !== 0
             ) {
-                throw new Error(
+                throw new RpcException(
                     [
                         'CKB contract generation failed.',
                         generateContract.stderr,
@@ -1066,7 +1067,7 @@ export class RuntimeServiceService {
             });
 
         if (createMarker.exitCode !== 0) {
-            throw new Error(
+            throw new RpcException(
                 `Unable to create project initialization marker: ${createMarker.stderr}`,
             );
         }
@@ -1214,7 +1215,7 @@ export class RuntimeServiceService {
             });
 
         if (!workspace) {
-            throw new NotFoundException(
+            throw new RpcException(
                 'Workspace not found',
             );
         }

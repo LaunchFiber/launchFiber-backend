@@ -29,7 +29,6 @@ export class DockerService implements OnModuleInit {
 
     async onModuleInit() {
         await this.docker.ping();
-
         this.logger.log('Terminal service connected to Docker');
     }
 
@@ -47,10 +46,44 @@ export class DockerService implements OnModuleInit {
         rows: number,
     ): Promise<void> {
         const exec = this.docker.getExec(execId);
-
         await exec.resize({
             w: cols,
             h: rows,
         });
+    }
+
+    // ✅ New method to create an exec in a container
+    async createExec(
+        containerId: string,
+        options: Docker.ExecCreateOptions,
+    ): Promise<Docker.Exec> {
+        const container = this.getContainer(containerId);
+        return await container.exec(options);
+    }
+
+    // ✅ New method to start an exec and get the stream
+    async startExec(
+        exec: Docker.Exec,
+        options?: Docker.ExecStartOptions,
+    ): Promise<NodeJS.ReadableStream> {
+        const stream = await exec.start({
+            hijack: true,
+            stdin: false,
+            ...options,
+        });
+        return stream;
+    }
+
+    /**
+     * Demultiplex a hijacked Docker exec stream into separate stdout/stderr
+     * writable streams. Docker multiplexes them with an 8-byte frame header;
+     * without demuxing the 'end' event on the raw stream is unreliable.
+     */
+    demuxStream(
+        stream: NodeJS.ReadableStream,
+        stdout: NodeJS.WritableStream,
+        stderr: NodeJS.WritableStream,
+    ): void {
+        this.docker.modem.demuxStream(stream, stdout, stderr);
     }
 }

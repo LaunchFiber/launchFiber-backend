@@ -45,6 +45,11 @@ export { Prisma }
  */
 export type User = Prisma.UserModel
 /**
+ * Model WalletChallenge
+ * 
+ */
+export type WalletChallenge = Prisma.WalletChallengeModel
+/**
  * Model Workspace
  * 
  */

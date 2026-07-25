@@ -39,17 +39,49 @@ enum RuntimeContainerStatus {
   FAILED
 }
 
-model User {
-  id           String   @id @default(uuid())
-  name         String
-  email        String   @unique
-  passwordHash String
-  role         UserRole @default(USER)
+enum AuthProvider {
+  EMAIL
+  CKB_WALLET
+}
 
-  workspaces Workspace[]
+model User {
+  id String @id @default(uuid())
+
+  name         String
+  email        String? @unique
+  passwordHash String?
+
+  walletAddress String?      @unique
+  authProvider  AuthProvider @default(EMAIL)
+
+  role UserRole @default(USER)
+
+  workspaces       Workspace[]
+  walletChallenges WalletChallenge[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([walletAddress])
+}
+
+model WalletChallenge {
+  id String @id @default(uuid())
+
+  walletAddress String
+  nonce         String @unique
+  message       String
+
+  expiresAt DateTime
+  usedAt    DateTime?
+
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([walletAddress])
+  @@index([expiresAt])
 }
 
 model Workspace {

@@ -385,6 +385,7 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 
 export const ModelName = {
   User: 'User',
+  WalletChallenge: 'WalletChallenge',
   Workspace: 'Workspace',
   WorkspaceContainer: 'WorkspaceContainer'
 } as const
@@ -402,7 +403,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "workspace" | "workspaceContainer"
+    modelProps: "user" | "walletChallenge" | "workspace" | "workspaceContainer"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -477,6 +478,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.UserCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.UserCountAggregateOutputType> | number
+        }
+      }
+    }
+    WalletChallenge: {
+      payload: Prisma.$WalletChallengePayload<ExtArgs>
+      fields: Prisma.WalletChallengeFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.WalletChallengeFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WalletChallengePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.WalletChallengeFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WalletChallengePayload>
+        }
+        findFirst: {
+          args: Prisma.WalletChallengeFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WalletChallengePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.WalletChallengeFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WalletChallengePayload>
+        }
+        findMany: {
+          args: Prisma.WalletChallengeFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WalletChallengePayload>[]
+        }
+        create: {
+          args: Prisma.WalletChallengeCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WalletChallengePayload>
+        }
+        createMany: {
+          args: Prisma.WalletChallengeCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.WalletChallengeCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WalletChallengePayload>[]
+        }
+        delete: {
+          args: Prisma.WalletChallengeDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WalletChallengePayload>
+        }
+        update: {
+          args: Prisma.WalletChallengeUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WalletChallengePayload>
+        }
+        deleteMany: {
+          args: Prisma.WalletChallengeDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.WalletChallengeUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.WalletChallengeUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WalletChallengePayload>[]
+        }
+        upsert: {
+          args: Prisma.WalletChallengeUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WalletChallengePayload>
+        }
+        aggregate: {
+          args: Prisma.WalletChallengeAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateWalletChallenge>
+        }
+        groupBy: {
+          args: Prisma.WalletChallengeGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.WalletChallengeGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.WalletChallengeCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.WalletChallengeCountAggregateOutputType> | number
         }
       }
     }
@@ -672,12 +747,28 @@ export const UserScalarFieldEnum = {
   name: 'name',
   email: 'email',
   passwordHash: 'passwordHash',
+  walletAddress: 'walletAddress',
+  authProvider: 'authProvider',
   role: 'role',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
+
+
+export const WalletChallengeScalarFieldEnum = {
+  id: 'id',
+  walletAddress: 'walletAddress',
+  nonce: 'nonce',
+  message: 'message',
+  expiresAt: 'expiresAt',
+  usedAt: 'usedAt',
+  userId: 'userId',
+  createdAt: 'createdAt'
+} as const
+
+export type WalletChallengeScalarFieldEnum = (typeof WalletChallengeScalarFieldEnum)[keyof typeof WalletChallengeScalarFieldEnum]
 
 
 export const WorkspaceScalarFieldEnum = {
@@ -756,6 +847,20 @@ export type StringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 
  * Reference to a field of type 'String[]'
  */
 export type ListStringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'String[]'>
+    
+
+
+/**
+ * Reference to a field of type 'AuthProvider'
+ */
+export type EnumAuthProviderFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AuthProvider'>
+    
+
+
+/**
+ * Reference to a field of type 'AuthProvider[]'
+ */
+export type ListEnumAuthProviderFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AuthProvider[]'>
     
 
 
@@ -967,6 +1072,7 @@ export type PrismaClientOptions = ({
 }
 export type GlobalOmitConfig = {
   user?: Prisma.UserOmit
+  walletChallenge?: Prisma.WalletChallengeOmit
   workspace?: Prisma.WorkspaceOmit
   workspaceContainer?: Prisma.WorkspaceContainerOmit
 }

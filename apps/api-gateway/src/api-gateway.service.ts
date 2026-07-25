@@ -80,6 +80,35 @@ export class ApiGatewayService {
         );
     }
 
+    createWalletChallenge(data: {
+        walletAddress: string;
+    }) {
+        return firstValueFrom(
+            this.authClient.send(
+                {
+                    cmd: 'auth.wallet.challenge',
+                },
+                data,
+            ),
+        );
+    }
+
+    walletLogin(data: {
+        walletAddress: string;
+        challengeId: string;
+        signature: unknown;
+    }) {
+        return firstValueFrom(
+            this.authClient.send(
+                {
+                    cmd: 'auth.wallet.login',
+                },
+                data,
+            ),
+        );
+    }
+
+
     // =========================================
     // Workspace service
     // =========================================
@@ -137,7 +166,7 @@ export class ApiGatewayService {
                 userId,
                 workspaceId,
             },
-            60_000,
+            15 * 60 * 1_000,
         );
     }
 

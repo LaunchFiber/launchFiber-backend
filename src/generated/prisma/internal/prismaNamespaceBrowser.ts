@@ -52,6 +52,7 @@ export const AnyNull = runtime.AnyNull
 
 export const ModelName = {
   User: 'User',
+  WalletChallenge: 'WalletChallenge',
   Workspace: 'Workspace',
   WorkspaceContainer: 'WorkspaceContainer'
 } as const
@@ -77,12 +78,28 @@ export const UserScalarFieldEnum = {
   name: 'name',
   email: 'email',
   passwordHash: 'passwordHash',
+  walletAddress: 'walletAddress',
+  authProvider: 'authProvider',
   role: 'role',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
+
+
+export const WalletChallengeScalarFieldEnum = {
+  id: 'id',
+  walletAddress: 'walletAddress',
+  nonce: 'nonce',
+  message: 'message',
+  expiresAt: 'expiresAt',
+  usedAt: 'usedAt',
+  userId: 'userId',
+  createdAt: 'createdAt'
+} as const
+
+export type WalletChallengeScalarFieldEnum = (typeof WalletChallengeScalarFieldEnum)[keyof typeof WalletChallengeScalarFieldEnum]
 
 
 export const WorkspaceScalarFieldEnum = {

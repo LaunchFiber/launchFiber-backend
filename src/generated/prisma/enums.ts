@@ -50,3 +50,11 @@ export const RuntimeContainerStatus = {
 } as const
 
 export type RuntimeContainerStatus = (typeof RuntimeContainerStatus)[keyof typeof RuntimeContainerStatus]
+
+
+export const AuthProvider = {
+  EMAIL: 'EMAIL',
+  CKB_WALLET: 'CKB_WALLET'
+} as const
+
+export type AuthProvider = (typeof AuthProvider)[keyof typeof AuthProvider]

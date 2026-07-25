@@ -7,7 +7,7 @@ import {
     InternalServerErrorException,
     NotFoundException,
 } from '@nestjs/common';
-
+import { RpcException } from '@nestjs/microservices';
 import { PrismaService } from '../../../libs/prisma/src/prisma.service';
 import { DockerService } from './docker.service';
 import {
@@ -114,7 +114,7 @@ export class FileServiceService {
         });
 
         if (result.exitCode !== 0) {
-            throw new NotFoundException(
+            throw new RpcException(
                 `File not found: ${normalizedPath}`,
             );
         }
@@ -156,7 +156,7 @@ export class FileServiceService {
             );
 
         if (exists) {
-            throw new ConflictException(
+            throw new RpcException(
                 `File already exists: ${normalizedPath}`,
             );
         }
@@ -192,7 +192,7 @@ export class FileServiceService {
             );
 
         if (!exists) {
-            throw new NotFoundException(
+            throw new RpcException(
                 `File not found: ${normalizedPath}`,
             );
         }
@@ -268,7 +268,7 @@ export class FileServiceService {
             );
 
         if (!exists) {
-            throw new NotFoundException(
+            throw new RpcException(
                 `Path not found: ${normalizedPath}`,
             );
         }
@@ -323,7 +323,7 @@ export class FileServiceService {
                 oldContainerPath,
             ))
         ) {
-            throw new NotFoundException(
+            throw new RpcException(
                 `Path not found: ${oldPath}`,
             );
         }
@@ -334,7 +334,7 @@ export class FileServiceService {
                 newContainerPath,
             )
         ) {
-            throw new ConflictException(
+            throw new RpcException(
                 `Destination already exists: ${newPath}`,
             );
         }
@@ -469,19 +469,19 @@ export class FileServiceService {
             !workspace ||
             workspace.status === 'DELETED'
         ) {
-            throw new NotFoundException(
+            throw new RpcException(
                 'Workspace not found',
             );
         }
 
         if (workspace.userId !== userId) {
-            throw new ForbiddenException(
+            throw new RpcException(
                 'You do not own this workspace',
             );
         }
 
         if (workspace.status !== 'RUNNING') {
-            throw new BadRequestException(
+            throw new RpcException(
                 'Workspace must be running before files can be accessed',
             );
         }
@@ -497,7 +497,7 @@ export class FileServiceService {
             });
 
         if (!runtimeContainer) {
-            throw new NotFoundException(
+            throw new RpcException(
                 'Fiber runtime container not found',
             );
         }
@@ -510,7 +510,7 @@ export class FileServiceService {
         stderr: string,
     ): void {
         if (exitCode !== 0) {
-            throw new InternalServerErrorException(
+            throw new RpcException(
                 stderr.trim() ||
                 'File operation failed',
             );

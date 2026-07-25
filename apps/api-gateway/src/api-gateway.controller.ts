@@ -73,6 +73,28 @@ export class ApiGatewayController {
         return user;
     }
 
+    @Post('auth/wallet/challenge')
+    createWalletChallenge(
+        @Body()
+        body: {
+            walletAddress: string;
+        },
+    ) {
+        return this.gatewayService.createWalletChallenge(body);
+    }
+
+    @Post('auth/wallet/login')
+    walletLogin(
+        @Body()
+        body: {
+            walletAddress: string;
+            challengeId: string;
+            signature: unknown;
+        },
+    ) {
+        return this.gatewayService.walletLogin(body);
+    }
+
     // =========================================
     // Workspace management
     // =========================================

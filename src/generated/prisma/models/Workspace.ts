@@ -529,14 +529,6 @@ export type EnumWorkspaceStatusFieldUpdateOperationsInput = {
   set?: $Enums.WorkspaceStatus
 }
 
-export type NullableStringFieldUpdateOperationsInput = {
-  set?: string | null
-}
-
-export type NullableDateTimeFieldUpdateOperationsInput = {
-  set?: Date | string | null
-}
-
 export type WorkspaceCreateNestedOneWithoutContainersInput = {
   create?: Prisma.XOR<Prisma.WorkspaceCreateWithoutContainersInput, Prisma.WorkspaceUncheckedCreateWithoutContainersInput>
   connectOrCreate?: Prisma.WorkspaceCreateOrConnectWithoutContainersInput
