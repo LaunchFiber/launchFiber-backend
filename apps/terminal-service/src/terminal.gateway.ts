@@ -399,10 +399,11 @@ export class TerminalGateway
                 });
             };
 
+            let streamEnded = false;
+
             const onStreamEnd = () => {
-                streamsClosed++;
-                // Only emit finished once both stdout and stderr are done.
-                if (streamsClosed < totalStreams) return;
+                if (streamEnded) return;
+                streamEnded = true;
 
                 this.logger.log(`[${client.id}] Test streams ended for run ${runId}`);
                 exec.inspect((err: any, inspectData: any) => {
@@ -439,10 +440,10 @@ export class TerminalGateway
 
             stdoutStream.on('data', (chunk) => onData(chunk, 'stdout'));
             stderrStream.on('data', (chunk) => onData(chunk, 'stderr'));
-            stdoutStream.on('end', onStreamEnd);
-            stderrStream.on('end', onStreamEnd);
-            stdoutStream.on('error', onError);
-            stderrStream.on('error', onError);
+            
+            rawStream.on('end', onStreamEnd);
+            rawStream.on('close', onStreamEnd);
+            rawStream.on('error', onError);
 
         } catch (error) {
             const message = error instanceof Error ? error.message : 'Unable to run tests';
@@ -815,10 +816,11 @@ export class TerminalGateway
                 });
             };
 
+            let streamEnded = false;
+
             const onStreamEnd = () => {
-                streamsClosed++;
-                // Only emit finished once both stdout and stderr are done.
-                if (streamsClosed < totalStreams) return;
+                if (streamEnded) return;
+                streamEnded = true;
 
                 this.logger.log(`[${client.id}] Build streams ended for run ${buildId}`);
                 exec.inspect((err: any, inspectData: any) => {
@@ -870,10 +872,10 @@ export class TerminalGateway
 
             stdoutStream.on('data', (chunk) => onData(chunk, 'stdout'));
             stderrStream.on('data', (chunk) => onData(chunk, 'stderr'));
-            stdoutStream.on('end', onStreamEnd);
-            stderrStream.on('end', onStreamEnd);
-            stdoutStream.on('error', onError);
-            stderrStream.on('error', onError);
+            
+            rawStream.on('end', onStreamEnd);
+            rawStream.on('close', onStreamEnd);
+            rawStream.on('error', onError);
 
             // Store start time
             client.currentBuild.startedAt = Date.now();
