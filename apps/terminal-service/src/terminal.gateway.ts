@@ -276,7 +276,7 @@ export class TerminalGateway
     @SubscribeMessage('test:run')
     async runTests(
         @ConnectedSocket() client: AuthenticatedSocket,
-        @MessageBody() payload: { workspaceId: string; command: string; cwd?: string },
+        @MessageBody() payload: { workspaceId: string; command: string; cwd?: string; runId?: string },
     ) {
         this.logger.log(`[${client.id}] Test run requested: workspace=${payload.workspaceId}, command="${payload.command}"`);
         this.logger.debug(`[${client.id}] Test working directory: ${payload.cwd || '/workspace'}`);
@@ -372,7 +372,7 @@ export class TerminalGateway
             const stderrStream = new PassThrough();
             this.dockerService.demuxStream(rawStream, stdoutStream, stderrStream);
 
-            const runId = uuidv4();
+            const runId = payload.runId || uuidv4();
             client.currentTestRun = { runId, exec, stream: rawStream, containerId: runtimeContainer.containerId };
             this.logger.log(`[${client.id}] Test run started with ID: ${runId}`);
 
@@ -626,7 +626,7 @@ export class TerminalGateway
     @SubscribeMessage('build:start')
     async startBuild(
         @ConnectedSocket() client: AuthenticatedSocket,
-        @MessageBody() payload: { workspaceId: string; target?: string; cwd?: string },
+        @MessageBody() payload: { workspaceId: string; target?: string; cwd?: string; buildId?: string },
     ) {
         this.logger.log(`[${client.id}] Build requested: workspace=${payload.workspaceId}, target="${payload.target || 'default'}", cwd="${payload.cwd || 'default'}"`);
 
@@ -771,7 +771,7 @@ export class TerminalGateway
             const stderrStream = new PassThrough();
             this.dockerService.demuxStream(rawStream, stdoutStream, stderrStream);
 
-            const buildId = uuidv4();
+            const buildId = payload.buildId || uuidv4();
             client.currentBuild = {
                 buildId,
                 exec,
